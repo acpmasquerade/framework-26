@@ -2,18 +2,13 @@
 	
 	class Helper_User extends Helper{
 
-		public static function get_current_user_client_id(){
-			$current_user = Session::getvar("user");
-			return $current_user->client_id;
-		}
-
 		public static function get_deleted_users_count(){
 			$x = self::db()->get_results("SELECT count(*) TOTAL from users WHERE status = '0'; ");
 			return $x->TOTAL;
 		}
 
 		public static function get_user($where = array()){
-			return self::db()->get_results(db_tbl_client_credits, $where);
+			return self::db()->get_results(db_tbl_users, $where);
 		}
 
 		public static function get_user_by_id($user_id){
@@ -25,12 +20,8 @@
 		public function search($query = NULL){
 			$where = "(`username` LIKE '%{$query}%' OR `email` LIKE '%{$query}%')";
 
-			if(self::is_reseller()){
-				$where .= " AND `client_id` = '".self::get_current_user_client_id() ."'";
-			}
-
 			try {
-				$results =  self::db()->get(DB::db_tbl_client_credits, $where);
+				$results =  self::db()->get(DB::db_tbl_users, $where);
 
 				if(!$results){
 					return array();
@@ -55,7 +46,7 @@
 
 		public static function get_user_by_username($username){
 			$username = mysql_real_escape_string($username);
-			$x = self::db()->get_results("SELECT * FROM  users WHERE `username` = '{$username}'; ");
+			$x = self::db()->get_results("SELECT * FROM  ".DB::db_tbl_users." WHERE `username` = '{$username}'; ");
 			return $x;
 		}
 
@@ -65,7 +56,7 @@
 				return false;
 			}
 
-			$query = "SELECT * FROM client_credits WHERE client_id = '{$client_id}' AND username='{$username}'";
+			$query = "SELECT * FROM ".DB::db_tbl_users." WHERE client_id = '{$client_id}' AND username='{$username}'";
 
 			$user_result = self::db()->get_results($query);
 
@@ -103,16 +94,6 @@
 			Session::setvar("user", $user); // logged in user's information
 		}
 
-		public static function is_super_user(){
-			$current_user = Session::getvar("user");
-
-			if($current_user && ($current_user->username === SUPER_USER) && ($current_user->user_role === USER_ROLE_ADMIN)){
-				// the user is a super user, only if these conditions satisfy
-				return true;
-			}
-			return false;
-		}
-
 		// Check if the current user is admin or not
 		public static function is_admin(){
 			$current_user = Session::getvar("user");
@@ -123,17 +104,8 @@
 			}
 		}
 
-		public static function is_reseller(){
-			$current_user = Session::getvar("user");
-			if( ( $current_user ) AND ( $current_user->user_role === USER_ROLE_RESELLER ) ){
-				return true;
-			}else{
-				return false;
-			}
-		}
-
 		public static function is_allowed_to_add_by_phone($phone){
-			$query_by_phone = "SELECT * FROM ".DB::db_tbl_client_credits." WHERE `phone` = '{$phone}' AND `status` != 'deleted'";
+			$query_by_phone = "SELECT * FROM ".DB::db_tbl_users." WHERE `phone` = '{$phone}' AND `status` != 'deleted'";
 
 			try {
 				$existing_user_by_phone = self::db()->get_results($query_by_phone);
@@ -155,7 +127,7 @@
 			// means that the account is not bound to the phone number
 			// now check if the username is already taken
 
-			$query_by_username = "SELECT * FROM ".DB::db_tbl_client_credits." WHERE `client_id` = '{$client_id}' AND `username` = '{$username}' AND `status` != 'deleted' ";
+			$query_by_username = "SELECT * FROM ".DB::db_tbl_users." WHERE `client_id` = '{$client_id}' AND `username` = '{$username}' AND `status` != 'deleted' ";
 			
 			try {
 				$existing_user_by_username = self::db()->get_results($query_by_username);
@@ -198,41 +170,17 @@
 			// check if there are any settings defined for the current domain
 			// if so, set the client_id, default credits, allowed network and allowed shortcode accordingly
 
-			Loader::helper("admin");
-
-			$where = array("host" => "http://www.sparrowsms.com");
-			$host_config_record = Helper_Admin::get_client_config($where);
-
-			if($host_config_record){
-				$client_id = $host_config_record->client_id;
-				$default_credits = $host_config_record->default_credits;
-				$allowed_networks = $host_config_record->allowed_networks;
-				$allowed_shortcodes = $host_config_record->allowed_shortcodes;
-			} else {
-				$client_id = Helper_General::default_client_id;
-				$default_credits = Helper_General::default_credits;
-				$allowed_networks = Helper_General::get_default_networks();
-				$allowed_shortcodes = Helper_General::get_default_shortcodes();
-			}
-
-			if(!isset($data["client_id"])){
-				$data["client_id"] = $client_id;
-			}
-
-			$data["available_credits"] = $default_credits;
-			$data["allowed_networks"] = $allowed_networks;
-			$data["allowed_shortcodes"] = $allowed_shortcodes;
-
 			try {
-				$client_credits_id = self::db()->insert(DB::db_tbl_client_credits, $data);
+				$user_id = self::db()->insert(DB::db_tbl_users, $data);
 
-				if($client_credits_id){
-					return $client_credits_id;
+				if($user_id){
+					return $user_id;
 				}
 
 			} catch (Exception $e){
 				Theme::notify("error", $e->getMessage());
 			}
+
 			return false;
 		}
 
@@ -242,7 +190,7 @@
 			}
 
 			foreach($user_meta_data as $some_user_meta_data){
-				self::db()->insert(DB::db_tbl_client_credits_meta, $some_user_meta_data);
+				self::db()->insert(DB::db_tbl_users_meta, $some_user_meta_data);
 			}
 		}
 
@@ -250,32 +198,31 @@
 			// now compose an email to be sent to the user
 			// the email shall contain 
 			// 1. Welcome Note
-			// 2. Client id
 			// 3. Username
 			// 4. password (randomly generated)
 			// 5. Login url
+
+			$login_url = Config::url("login");
 
 			$email_content = <<<EOT
 
 			Dear {$username},
 
-			Thank you for signing up with Sparrow SMS API.
+			Thank you for signing up.
 
-			Please keep the following information safe. Below are the login information to your API dashboard.
+			Please keep the following information safe. Below is your login information.
 
-			<strong>Client ID</strong>: <em>{$use_info["client_id"]}</em>
 			<strong>Username</strong>: <em>{$user_info["username"]}</em>
 			<strong>Password</strong>: <em>{$user_info["password"]}</em>
+			<strong>Login</strong>: <em>{$login_url}</em>
 
-
-			Thanks,
-			Sparrow SMS
+			Regards,
 EOT;
 			Loader::helper("general");
 
 			// SEND THE EMAIL TO THE RECIPIENT
 			$email_details["to"] = $email;
-			$email_details["subject"] = "Welcome to Sparrow SMS";
+			$email_details["subject"] = "Welcome";
 			$email_details["message"] = $email_content;
 			Helper_General::send_email($email_details);
 		}

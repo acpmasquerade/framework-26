@@ -205,24 +205,4 @@ EOT;
 			Template::set("account/password_reset_form", $view_data);
 		}
 
-		public function credits($user_id = NULL){
-
-			Loader::Helper("credits");
-
-			if(Helper_User::is_admin() && $user_id){
-				$user_id = trim($user_id);
-			} else {
-				$user_id = $this->user_id;
-			}
-
-			$where["user_id"] = $this->user_id;
-			$credit_history = Helper_Credits::get_client_credit_history($where);
-
-			$view_data["credit_history"] = $credit_history;
-
-			Config::set("page_title", "Credit Details");
-			Config::set("active_link", "credits");
-			Template::set("account/credits", $view_data);
-		}
-
 	}

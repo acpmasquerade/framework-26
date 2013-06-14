@@ -6,11 +6,9 @@ class Controller_User extends Asstroller {
 		parent::__construct();
 
 		Config::set("navigation", true);
-		Config::set("controller", "docs");
 
 		$this->user = Session::getvar("user");
 		Loader::helper("user");
-		Loader::helper("clients");
 		Loader::helper("acl");
 
 
@@ -24,10 +22,11 @@ class Controller_User extends Asstroller {
 		if(Helper_User::is_admin()){
 			$where = "`status` != 'deleted'";
 		} else {
-			$where = "`status` != 'deleted' AND `client_id` = '{$this->user->client_id}'";
+			$current_user_id = Helper_User::get_current_user_id();
+			$where = "`status` != 'deleted' and id='{$current_user_id}'";
 		}
 
-		$users = Helper_Clients::get_clients($where);
+		$users = Helper_User::get_users($where);
 
 		$view_data["users"] = $users;
 

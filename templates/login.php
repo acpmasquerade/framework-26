@@ -5,9 +5,6 @@
             <div class="block-body">
                 <form method="POST" action="<?php echo Config::get("base_url");?>login">
 
-                    <label for="client_id">Client ID</label>
-                    <input type="text" name="client_id" id="client_id" class="span12" />
-
                     <label for="username">Username</label>
                     <input type="text" class="span12" name="username">
 

@@ -17,7 +17,7 @@
 		}
 
 		public static function hash($text){
-			return md5($text."~moFald_");
+			return md5($text."~framework26_");
 		}
 
 		public static function url($path){

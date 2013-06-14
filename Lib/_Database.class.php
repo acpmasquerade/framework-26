@@ -7,13 +7,9 @@ class DB extends ezSQL_mysql {
 
 	const default_limit = 10;
 
-	const db_tbl_client_credits = "client_credits";
-	const db_tbl_client_config = "client_config";
-	const db_tbl_client_credits_meta = "client_credits_meta";
-	const db_tbl_client_credit_history = "client_credit_history";
+	const db_tbl_users = "users";
+	const db_tbl_users_meta = "users_meta";
 	const db_tbl_announcements = "announcements";
-	const db_tbl_sms_message_outgoing = "sms_message_outgoing";
-	const db_tbl_access_logs = "access_logs";
 
 	public function insert($table, $values){
 		$query = "";

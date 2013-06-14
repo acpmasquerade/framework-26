@@ -12,9 +12,9 @@
 			error_reporting(0);
 			Config::set("base_url", "http://devapi.sparrowsms.com");
 
-            $db_user = "sparrowMofald";
-			$db_password = "yBvYpDbP4e3CcjED";
-			$db_name = "sparrowsms_mofald";
+            $db_user = "dbuser";
+			$db_password = "dbpass";
+			$db_name = "dbname";
 			$db_host = "localhost";
 
             Config::set("session_scope_key", "sparrowsmsapi");
@@ -30,32 +30,32 @@
 
 		case "staging":
 			error_reporting(0);
-			Config::set("base_url", "http://api.sparrowsms.com/");
+			Config::set("base_url", "http://devapi.sparrowsms.com");
 
-			$db_user = "mofald";
-			$db_password = "a9sd8yfajsdfasdfasd";
-			$db_name = "mofald";
+            $db_user = "dbuser";
+			$db_password = "dbpass";
+			$db_name = "dbname";
 			$db_host = "localhost";
 
-			Config::set("session_scope_key", "sparrowsmsapi");
+            Config::set("session_scope_key", "sparrowsmsapi");
 			Config::set("sparrowsms_client_id", "sparrowsmsapi");
 			Config::set("sparrowsms_username", "sparrowsmsapi");
 			Config::set("sparrowsms_password", "aa6af5e7280b6e16d18739bdd7cf6351");
 			Config::set("sparrowsms_from", "5001");
 
 			Config::set("default-email-name", "Sparrow SMS");
-			Config::set("default-email", "developers@sparrowsms.com");				
+			Config::set("default-email", "developers@sparrowsms.com");		
 
 		break;
 
 		case "development":
 		default:
 			error_reporting(E_ALL);
-			Config::set("base_url", "http://localhost/api.sparrowsms.com/");
+			Config::set("base_url", "http://localhost/work/framework-26/");
 
-			$db_user = "sparrowsmsapi";
-			$db_password = "sparrowsmsapi";
-			$db_name = "sparrowsms_apiclients";
+			$db_user = "framework26";
+			$db_password = "framework26";
+			$db_name = "framework26";
 			$db_host = "localhost";
 
 			Config::set("session_scope_key", "sparrowsmsapi");
