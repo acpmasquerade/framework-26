@@ -1,0 +1,55 @@
+#home-content
+{
+	margin: 6%;
+}
+.copyright
+{
+	text-align: center;
+}
+
+td.no-record {
+	text-align: center;
+}
+
+/* shortcuts */
+
+
+.quick-links {
+	text-align: center;	
+}
+
+.quick-links .link { 
+	width: 22.50%;
+	display: inline-block;
+	padding: 12px 0;
+	margin: 0 .9% 1em;
+	vertical-align: top;	
+	
+	text-decoration: none;
+	
+	background: #F3F3F3;
+	
+	border-radius: 5px;
+}
+
+.quick-links .link .link-icon {
+	margin-top: .25em;
+	margin-bottom: .25em;
+	font-size: 32px;
+	color: #888;
+}
+
+.quick-links .link:hover {
+	background: #E8E8E8;
+}
+
+.quick-links .link:hover .link-icon {
+	color: #666;
+}
+
+.quick-links .link-label {
+	display: block;
+	
+	font-weight: 400;
+	color: #666;
+}
