@@ -25,4 +25,9 @@ class Controller_Admin extends Asstroller {
 		Template::set("admin/index", array());
 	}
 
+	public function config(){
+		Config::set("page_title", "Administration");
+		Template::set("admin/config", array());	
+	}
+
 }

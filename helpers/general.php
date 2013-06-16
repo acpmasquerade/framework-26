@@ -1,6 +1,6 @@
 <?php
 
-class Helper_General {
+class Helper_General extends Helper{
 	
 	const host = "acpmasquerade.github.io";
     const default_user_account_status = "active";

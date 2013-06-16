@@ -2,15 +2,14 @@
 
 Loader::helper("user");
 
-class Helper_ACL {
+class Helper_ACL extends Helper{
 
 	// configure components or menus to user roles, statically
 
 	private static $user_role = array(
-		"superuser" => "111",
-		"admin" => "101",
-		"moderator" => "100",
-		"reseller" => "11",
+		"superuser" => "111", // supposed
+		"admin" => "101", 
+		"moderator" => "100", // supposed
 		"user" => "10"
 	);
 
@@ -39,12 +38,7 @@ class Helper_ACL {
 			"config",
 			"logs",
 		);
-
-		$menus["reseller"] = array(
-			"users",
-			"logs",
-		);
-
+		
 		$menus["user"] = array(
 			"users",
 			"logs"

@@ -136,7 +136,7 @@ class Controller_Login extends Facetroller {
 		}
 
 		Config::set("page_title", "Framework26 Signup");
-		Template::set("api-signup", array());
+		Template::set("signup", array());
 	}
 
 	public function verify($verification_code){

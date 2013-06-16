@@ -1,10 +1,7 @@
 <?php
 
 define("USER_ROLE_ADMIN", "admin");
-define("USER_ROLE_RESELLER", "reseller");
 define("USER_ROLE_USER", "user");
-
-define("SUPER_USER", "admin");
 
 class Helper {
 	

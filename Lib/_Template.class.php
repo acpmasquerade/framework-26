@@ -21,7 +21,11 @@
 				include_once $default_content_filename;
 			}
 
-			if($page !== "login" && $page !== "forgot_password" && $page !== "api-signup"){
+			/** 
+			 * @todo - have to check this thing. 
+			 * -better would be to differentiate the controller and theme types and proceed accordingly.
+			 */
+			if($page !== "login" && $page !== "forgot_password" && $page !== "signup"){
 				include_once __DIR__."/../templates/themes/".self::current_theme."/__content_footer.php";
 			}
 			

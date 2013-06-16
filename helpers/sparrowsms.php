@@ -1,6 +1,10 @@
 <?php
 	
-class Helper_SMS extends Helper {
+/**
+ * A Bonus Helper for SMS communication via Sparrow SMS. (api.sparrowsms.com)
+ * Get the access credentials from the provider
+ */
+class Helper_SparrowSMS extends Helper {
 
 	public static function push($to, $message, $log_data = array()){
 		$client_id = Config::get("sparrowsms_client_id");
@@ -51,47 +55,8 @@ class Helper_SMS extends Helper {
 			"content"=>$response_content, 
 			);
 
-		// Add the outgoing log to server
-		// on behalf of username
-		$db_log_data = array();
-		$db_log_data["message"] = $message;
-		$db_log_data["created"] =  date("Y-m-d H:i:s", time());
-		$db_log_data["credits"] = ceil(strlen($message)/160);
-
-		if(isset($log_data["total_unread"])){
-			$db_log_data["total_unread"] = $log_data['total_unread'];
-		}else{
-			$db_log_data["total_unread"] = 0;
-		}
-
-		if(isset($log_data["total_mofald"])){
-			$db_log_data["total_mofald"] = $log_data['total_mofald'];
-		}else{
-			$db_log_data["total_mofald"] = 0;
-		}
-
-		if(isset($log_data["username"])){
-			$db_log_data["username"] = $log_data['username'];
-		}else{
-			$db_log_data["username"] = 0;
-		}
-
-		$db_log_data['response'] = $response_content;
-		$db_log_data["response_code"] = $return["code"];
-		$db_log_data["response_status"] = $return["status"];
-
-		$db_log_data["phone"] = $to;
-
-		self::db()->insert("outgoing_logs", $db_log_data);
-
-		return $return;
-		 
-		// STEP 2
-		// put the request to server
-		// $response = file_get_contents($api_url);
-		// // check the response and verify
-
-		// $return =  array("headers"=>$http_response_header, "response"=>$response);
-		// mdie($return);
+		// You may store the outgoing records somewhere, if you require.
+		
+		return $return;		
 	}
 }

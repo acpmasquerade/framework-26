@@ -92,7 +92,7 @@ class Controller_User extends Asstroller {
 				if(!Helper_User::is_admin() && $user_role === USER_ROLE_ADMIN){
 					// this means, a non-super user is attempting to make a user an admin
 					$user_role = USER_ROLE_USER;
-					Template::notify("error", "[Authority breached] You do not have permissions to assign an admin");
+					Template::notify("error", "[Unauthorized Attempt] You do not have permissions to assign an admin");
 				}
 
 			} else {
