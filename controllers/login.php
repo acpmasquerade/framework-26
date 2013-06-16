@@ -1,13 +1,14 @@
 <?php
 
+/**
+ * The Login Controller
+ * @author - acpmasquerade@gmail.com, cooshal
+ */
 class Controller_Login extends Facetroller {
 
 
 	public function __construct(){
-		parent::__construct();
-		Loader::helper("general");
-		Loader::helper("clients");
-		Loader::helper("user");
+		parent::__construct();		
 	}
 
 	/**
@@ -32,7 +33,7 @@ class Controller_Login extends Facetroller {
 			if(Helper_User::login($username, $password)){
 				redirect("dashboard");
 			} else {
-				Template::notify("error","Invalid Login details. Please check your login information and try again");
+				Template::notify("error","Invalid Login details. Either the account is not active, or the credentials donot match as expected. ");
 			}
 		}
 
@@ -170,81 +171,13 @@ class Controller_Login extends Facetroller {
 
     }
 
-	public function credit_topup(){
-
-		$remote_address = $_SERVER["REMOTE_ADDR"];
-
-		if($remote_address !== "127.0.0.1" && $remote_address !== $_SERVER["SERVER_ADDR"]){
-			die("Unauthorized Access");
-		}
-
-		if($_REQUEST){
-			// based on the phone number, get the client_ID (alphabet based)
-			// with that, query the configured amount of topup credits from the database
-			// update the credit info of the user
-
-			Loader::helper("clients");
-
-			if(!isset($_REQUEST["phone"])){
-				die("Invalid Data Format. Please contact the system administrator for this issue");
-			}
-			$phone = trim($_REQUEST["phone"]);
-
-			if(!is_valid_phone_number($phone)){
-				die("Invalid Attempt. Intrusion Detected");
-			}
-
-			$where = "`phone` = '{$phone}' AND `status` != 'deleted'";
-			$client_credit_info = Helper_Clients::get_client_credit($where);
-
-			if(!$client_credit_info){
-				die("There is no account associated with your phone number. Please try with a valid account's phone number");
-			}
-
-			// account exists
-			// get the client ID of that phone number
-			// for legacy, client_id in the db is a varchar column rather than an identifier
-			$user_id = $client_credit_info->id;
-			$client_id = $client_credit_info->client_id;
-
-			$where = array();
-
-			Loader::helper("admin");
-
-			$where["client_id"] = $client_id;
-			$where["host"] = Helper_General::host;
-
-			$host_config_record = Helper_Admin::get_client_config($where);
-
-			if($host_config_record){
-				// if there is a defined entry for that particular host
-				// get the default number of SMS to topup
-				$credit_topup_amount = $host_config_record->credit_topup_amount;
-			} else {
-				// if not
-				// get the default number of SMS to topup defined in the code
-				$credit_topup_amount = Helper_General::default_credit_topup_amount;
-			}
-
-			if(!$credit_topup_amount){
-				die("System Error: Cannot add credits to your account. Please try again later");
-			}
-
-			Loader::helper("credits");
-
-			$credits_data["credits"] = $credit_topup_amount;
-			$credits_data["user_id"] = $user_id;
-			$credits_data["ref"] = "sms-query";
-			$credits_data["remarks"] = "{$credit_topup_amount} added to {$client_credit_info->username}'s account for FREE !";
-
-			if(Helper_Credits::topup_user_credit($credits_data)){
-				die("{$credit_topup_amount} credits have been added to your account. Thank You for using Sparrow SMS.");
-			} else {
-				die("There was an error adding credits to your account. Please contact the system support");
-			}
-		}	
-	}
-
+    /**
+     * Generates a Forgot password page
+     * as of now, it expects the phone number and verifies an account with the particular phone number
+     * fetches the email address associated, and then sends email to confirm the password reset.
+     * - Why phone number chosen ? - still scratching to find the answer. 
+     * - @todo : move the LOGIC to somewhere else. the controller method looks quite heavy. 
+     */
 	public function forgot_password(){
 
 		if($_POST){
@@ -345,15 +278,14 @@ class Controller_Login extends Facetroller {
 								// send an email
 
 								$email_details["to"] = $user_email;
-								$email_details["subject"] = "Sparrow SMS API Password Reset";
+								$email_details["subject"] = "Password Reset";
 								$password_reset_url = Config::url("login");
 
 								$email_details["message"] = <<<EOT
 
-
 								Dear {$user_info->username},
 
-								You have requested to reset your password at Sparrow SMS's Developer Panel.
+								You have requested to reset your password.
 								Please click on the link below to proceed with password reset.
 
 								<a href="{$password_reset_url}/reset/{$password_reset_token}">
@@ -364,14 +296,8 @@ class Controller_Login extends Facetroller {
 
 								{$password_reset_url}/reset/{$password_reset_token}
 
-								Thank You for using Sparrow SMS.
-
-								Happy Coding !
+								Thank You.
 EOT;
-
-								echo ($email_details["message"]);
-
-								die();
 
 								Helper_General::send_email($email_details);
 
@@ -391,10 +317,13 @@ EOT;
 		Template::set("forgot_password", array());
 	}
 
+	/**
+	 * - Receives the click for forgot_password, once an email is received by the user
+	 * - @todo - Clean the mess. Move the logic OFF the controller.
+	 */
 	public function reset($reset_token = NULL){
 		if(!$reset_token){
-			Template::set("404", array());
-			return;
+			return Helper_Template::page_not_found();
 		}
 
 		$password_reset_token_where["meta_key"] = "password_reset_token";
@@ -402,7 +331,7 @@ EOT;
 
 		// check if the password reset token is stored in the databse (is valid)
 
-		$password_reset_token_record = Helper_Clients::get_clients_meta($password_reset_token_where);
+		$password_reset_token_record = Helper_User::get_user_meta($password_reset_token_where);
 
 		if($password_reset_token_record){
 			// there is a record
@@ -411,7 +340,7 @@ EOT;
 			$password_reset_token_dump_where["meta_key"] = "password_reset_dump";
 			$password_reset_token_dump_where["user_id"] = $user_id;
 
-			$password_reset_token_dump = Helper_Clients::get_clients_meta($password_reset_token_dump_where);
+			$password_reset_token_dump = Helper_User::get_user_meta($password_reset_token_dump_where);
 
 			if($password_reset_token_dump){
 				$_dump = $password_reset_token_dump->meta_value;
@@ -427,7 +356,7 @@ EOT;
 					$clients_update_data["password"] = $new_password_hash;
 					$clients_update_where["id"] = $user_id;
 
-					if($this->db->update(DB::db_tbl_client_credits, $clients_update_data, $clients_update_where)){
+					if($this->db->update(DB::db_tbl_users, $clients_update_data, $clients_update_where)){
 						// also change the dump settings in the meta table as expired/used
 						$dump_values["status"] = "expired";
 
@@ -438,20 +367,18 @@ EOT;
 						$password_reset_token_dump_where["user_id"] = $user_id;
 						$password_reset_token_dump_where["meta_key"] = "password_reset_dump";
 
-						if($this->db->update(DB::db_tbl_client_credits_meta, $password_reset_token_dump, $password_reset_token_dump_where)){
+						if($this->db->update(DB::db_tbl_users_meta, $password_reset_token_dump, $password_reset_token_dump_where)){
 							// compose and send an email to the user, emailing the new password
 
 							$email_details["to"] = $dump_values["to"];
-							$email_details["subject"] = "Sparrow SMS Developers API - Password Reset Successfull";
+							$email_details["subject"] = "Password was Reset";
 							$email_details["message"] = <<<EOT
 
 							Your password has been reset. Please keep a note of your new password and keep it safe.
 
 							New Password: <strong>{$new_password}</strong>
 
-							Thank You for using Sparrow SMS.
-
-							Happy Coding !
+							Thank You.
 EOT;
 							Helper_General::send_email($email_details);
 							Template::notify("success", "Your password has been reset. Please check your email for the new password {$new_password}");

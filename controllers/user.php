@@ -149,8 +149,8 @@ class Controller_User extends Asstroller {
 
 							$user_info["username"] = $username;
 							$user_info["email"] = $email;
-							$user_info["password"] = $random_password;
-							$user_info["user_id"] - $user_id;
+							$user_info["password"] = $password;
+							$user_info["user_id"] = $user_id;
 
 							Helper_User::send_new_user_email($user_info);
 

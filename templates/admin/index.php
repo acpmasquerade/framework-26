@@ -1,17 +1,8 @@
 <div class="row-fluid">
-
-	<div class="span12">
-		<div class="span3 blocks">
-			<a href="<?php echo Config::url("admin/config");?>">Host Configuration</a>
-		</div>
-
-		<div class="span3 blocks">
-			<a href="<?php echo Config::url("user");?>">Users</a>
-		</div>
-
-		<div class="span3 blocks">
-			<a href="#">Logs</a>
-		</div>
-	</div>
-
+    <div class="http-error">
+        <h1>Admin!</h1>
+        <p class="info">Hack your own administration dashboard.</p>
+        <p><i class="icon-home"></i></p>
+        <p><a href="<?php echo Config::url("");?>">Back to the home page</a></p>
+    </div>
 </div>

@@ -109,7 +109,7 @@
                     </ul>
                 <?php endif; ?>
 
-                <a class="brand" href="<?php echo Config::url(""); ?>"><span class="first">Sparrow SMS</span> <span class="second">- API </span></a>
+                <a class="brand" href="<?php echo Config::url(""); ?>"><span class="first">Framework</span> <span class="second">26 </span></a>
             </div>
         </div>
 
@@ -118,9 +118,13 @@
             <?php
             $navigation_bar = Config::get("navigation_bar");
 
+            // if some navigation bar isn't defined, 
+            // load the default navigation bar.
             if (!$navigation_bar) {
+                // yes, the default
                 include_once __DIR__ . "/__navigation.php";
             } else {
+                // no, the one I wanted.
                 include_once __DIR__ . "/{$navigation_bar}.php";
             }
             ?>
@@ -163,11 +167,19 @@
                 <div class="container-fluid">
                     <div id="docs-container">
                         <?php
+                        // want to add something above the contianer.
+                        // may be a secondary navigation or so
+                        // just set a config variable in "header" and get it here.
                         if (Config::get("header")) {
                             $view_header = Config::get("header");
+                            // check current theme folder first
                             if(file_exists(__DIR__."/{$view_header}.php")){
+                                // oh yeah!! its there.
                                 include_once __DIR__ . "/{$view_header}.php";
                             }else{
+                                // want to check the templates root path.
+                                // two backsteps because the convention is 
+                                // templates/themes/some-theme-name.
                                 include_once realpath(__DIR__ . "/../../{$view_header}.php");
                             }
                         }
@@ -175,6 +187,7 @@
 
                     <?php endif; ?>
 
+                    <?php /** And the notifications. How can these be missed **/ ?>
                     <?php if (Template::has_notifications()): ?>      
                         <?php foreach (Template::get_notifications() as $some_scope => $some_notifications): ?>
                             <?php if (count($some_notifications)): ?>

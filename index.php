@@ -1,4 +1,10 @@
 <?php
+	/**
+	 * - Framework-26
+	 * - hopefully an ultra-light PHP Framework
+	 * - @acpmasquerade
+	 * - License : Pick one yourself.
+	 */
 	session_start();
 
 	define("ENVIRONMENT", "development");
@@ -10,41 +16,33 @@
 	switch(ENVIRONMENT){
 		case "production":
 			error_reporting(0);
-			Config::set("base_url", "http://devapi.sparrowsms.com");
+			Config::set("base_url", "http://production.yourapp.com");
 
             $db_user = "dbuser";
 			$db_password = "dbpass";
 			$db_name = "dbname";
 			$db_host = "localhost";
 
-            Config::set("session_scope_key", "sparrowsmsapi");
-			Config::set("sparrowsms_client_id", "sparrowsmsapi");
-			Config::set("sparrowsms_username", "sparrowsmsapi");
-			Config::set("sparrowsms_password", "aa6af5e7280b6e16d18739bdd7cf6351");
-			Config::set("sparrowsms_from", "5001");
+            Config::set("session_scope_key", "framework26");
 
-			Config::set("default-email-name", "Sparrow SMS");
-			Config::set("default-email", "developers@sparrowsms.com");		
+			Config::set("default-email-name", "acpmasquerade");
+			Config::set("default-email", "info@acpmasquerade.com");
 
 		break;
 
 		case "staging":
 			error_reporting(0);
-			Config::set("base_url", "http://devapi.sparrowsms.com");
+			Config::set("base_url", "http://staging.yourapp.com");
 
             $db_user = "dbuser";
 			$db_password = "dbpass";
 			$db_name = "dbname";
 			$db_host = "localhost";
 
-            Config::set("session_scope_key", "sparrowsmsapi");
-			Config::set("sparrowsms_client_id", "sparrowsmsapi");
-			Config::set("sparrowsms_username", "sparrowsmsapi");
-			Config::set("sparrowsms_password", "aa6af5e7280b6e16d18739bdd7cf6351");
-			Config::set("sparrowsms_from", "5001");
+            Config::set("session_scope_key", "framework26");
 
-			Config::set("default-email-name", "Sparrow SMS");
-			Config::set("default-email", "developers@sparrowsms.com");		
+			Config::set("default-email-name", "acpmasquerade");
+			Config::set("default-email", "info@acpmasquerade.com");
 
 		break;
 
@@ -58,14 +56,10 @@
 			$db_name = "framework26";
 			$db_host = "localhost";
 
-			Config::set("session_scope_key", "sparrowsmsapi");
-			Config::set("sparrowsms_client_id", "sparrowsmsapi");
-			Config::set("sparrowsms_username", "sparrowsmsapi");
-			Config::set("sparrowsms_password", "aa6af5e7280b6e16d18739bdd7cf6351");
-			Config::set("sparrowsms_from", "5001");
+			Config::set("session_scope_key", "framework26");
 
-			Config::set("default-email-name", "Sparrow SMS");
-			Config::set("default-email", "developers@sparrowsms.com");		
+			Config::set("default-email-name", "acpmasquerade");
+			Config::set("default-email", "info@acpmasquerade.com");
 
 		break;
 	}

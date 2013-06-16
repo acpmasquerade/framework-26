@@ -14,6 +14,12 @@ class Controller_Dashboard extends Asstroller {
 		Loader::helper("acl");
 	}
 
+	/**
+	 * The logged in user dashboard
+	 * - throw some stats
+	 * - throw some notifications
+	 * - may be some account information.
+	 */
 	public function index(){
 		// the user information can be obtained from the view via static session class
 		// get the list of announcements from the database
@@ -24,6 +30,7 @@ class Controller_Dashboard extends Asstroller {
 
 		$user = Session::getvar("user");
 
+		// some demo chart to put something as a placeholder
 		$chart_content = $this->demo_chart();
 
 		$view_data["chart_block_content"] = $chart_content;

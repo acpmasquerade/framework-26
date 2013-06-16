@@ -37,6 +37,9 @@
 
 		}
 
+		/**
+		 * Change your account's password
+		 */
 		public function password(){
 
 			$user_info = Helper_User::get_user_by_id($this->user_id);
@@ -106,6 +109,10 @@
 			Template::set("account/template", $view_data);
 		}
 
+		/**
+		 * Post change password controller
+		 * @todo - need to move it off the controller
+		 */
 		private function change_password($new_password, $user_info){
 
 			$where["id"] = $user_info->id;
@@ -133,67 +140,6 @@ EOT;
 			}
 
 			return false;
-		}
-
-		public function reset($user_id){
-			// this method will render a password reset form
-			// it will be applicable:
-			// 		if the user is a superuser
-			// 		or if the user is the reseller of the current user or in a higher hierarchy
-
-			if($_POST){
-				$formdata = form_post_data(array("new_password", "confirm_new_password"));
-
-				$new_password = $formdata["new_password"];
-				$confirm_new_password = $formdata["confirm_new_password"];
-
-				$error_flag = false;
-
-				if(strlen($new_password) > 0 && strlen($confirm_new_password) > 0){
-					// if both fields are not empty
-
-					if(strlen($new_password) < 6){
-						// the password cannot be less than 6 characters
-						$error_flag = true;
-						Template::notify("error", "Too short password. Password must be at least 6 characters long.");
-					} else {
-						// now compare the two new passwords
-						if(strcmp($new_password, $confirm_new_password) !== 0){
-							// both passwords are not same
-							$error_flag = true;
-							Template::notify("error", "New Passwords do not match. Please try again.");
-						}
-					}
-				} else {
-					Template::notify("error", "Please enter the new password");
-				}
-
-				if(!$error_flag){
-					// everything is ok here
-					$user_info = Helper_User::get_user_by_id($user_id);
-
-					// to reset the password of a user, the resetting user has to be either a super user
-					// or a user with a higher privilege
-
-					if(Helper_User::is_admin() || Helper_User::get_current_user_id() == $user_id){
-						if($this->change_password($new_password, $user_info)){
-							Template::notify("success", "Password of {$user_info->username} has been changed successfully. The user has also been notified by email");
-						} else {
-							Template::notify("error", "There was an error in resetting the password. Please try again later");
-						}
-					} else {
-						Template::notify("error", "You do not have sufficient permissions to change this user's password");
-					}
-					redirect(Config::url("user"));
-				}
-
-			}
-
-			$view_data["user_id"] = $user_id;
-
-			Config::set("header", "");
-			Config::set("page_title", "Reset Password");
-			Template::set("account/password_reset_form", $view_data);
-		}
+		}	
 
 	}

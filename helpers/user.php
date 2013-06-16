@@ -223,6 +223,8 @@
 
 			$login_url = Config::url("login");
 
+			$username = $user_info["username"];
+
 			$email_content = <<<EOT
 
 			Dear {$username},
