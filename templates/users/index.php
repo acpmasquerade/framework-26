@@ -43,7 +43,6 @@
 		<thead>
 			<tr>
 				<th colspan=2>Username</th>
-				<th>Client ID</th>
 				<th>Email</th>
 				<th>Phone</th>
 				<th>Role</th>
@@ -70,7 +69,6 @@
 								<?php echo $some_user->username;?>
 							</a>
 						</td>
-						<td><?php echo $some_user->client_id;?></td>
 						<td><?php echo $some_user->email;?></td>
 						<td><?php echo $some_user->phone;?></td>
 						<td><?php echo $some_user->user_role;?></td>

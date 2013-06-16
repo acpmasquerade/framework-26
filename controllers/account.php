@@ -5,11 +5,9 @@
 
 		public function __construct(){
 			parent::__construct();
-			Loader::helper("clients"); // with this helper, we get the account information
 			Loader::helper("user");
 
 			Config::set("navigation", true);
-			Config::set("header", "account/header");
 
 			$this->user_id = Session::getvar("is_logged_in_id");
 		}
@@ -27,24 +25,21 @@
 				$user_id = $this->user_id;
 			}
 
-			$where["id"] = $user_id;
-			$user_info = Helper_Clients::get_client($where);
+			$user_info = Helper_User::get_user_by_id($user_id);			
 
 			$view_data["user_info"] = $user_info;
 
 			Config::set("page_title", "Account Information");
 			Config::set("active_link", "summary");
-			Template::set("account/view", $view_data);
+
+			Template::setvar("page", "account/view");
+			Template::set("account/template", $view_data);
 
 		}
 
-		// public function edit(){
-		// 	Config::set("page_title", "Edit Account");
-		// 	Config::set("active_link", "edit");
-		// 	Template::set("account/edit", array());
-		// }
-
 		public function password(){
+
+			$user_info = Helper_User::get_user_by_id($this->user_id);
 
 			if($_POST){
 
@@ -87,9 +82,6 @@
 					// if the old password matches with the one that the user entered
 					// change the password, else throw an error
 
-					$where["id"] = $this->user_id;
-					$user_info = Helper_Clients::get_client_credit($where);
-
 					$old_password_hash = Config::hash($old_password);
 
 					if(strcmp($old_password_hash, trim($user_info->password)) === 0){
@@ -104,9 +96,14 @@
 					}
 				}
 			}
+
 			Config::set("active_link", "password");
 			Config::set("page_title", "Change Account Password");
-			Template::set("account/password", array());
+
+			$view_data["user_info"] = $user_info;
+
+			Template::setvar("page", "account/password");
+			Template::set("account/template", $view_data);
 		}
 
 		private function change_password($new_password, $user_info){
@@ -114,20 +111,18 @@
 			$where["id"] = $user_info->id;
 			$password_update_data["password"] = Config::hash($new_password);
 			
-			if($this->db->update(DB::db_tbl_client_credits, $password_update_data, $where)){
+			if($this->db->update(DB::db_tbl_users, $password_update_data, $where)){
 
 				$email_details["to"] = $user_info->email;
 				$email_details["message"] = <<<EOT
 				Dear {$user_info->username},
 				Your account's password has been changed.
 
-				If you did not change this password, please reply to forgery@sparrowsms.com.
+				If you did not change this password, please contact support.
 
-				Keep Exploring with Sparrow SMS API
+				Keep Exploring.
 
 				Thanks,
-				Sparrow SMS
-
 EOT;
 				Loader::helper("general");
 				Helper_General::send_email($email_details);
@@ -175,16 +170,12 @@ EOT;
 
 				if(!$error_flag){
 					// everything is ok here
-					$where["id"] = $user_id;
-					$user_info = Helper_Clients::get_client_credit($where);
+					$user_info = Helper_User::get_user_by_id($user_id);
 
 					// to reset the password of a user, the resetting user has to be either a super user
 					// or a user with a higher privilege
 
-					if(Helper_User::is_super_user() || 
-					(((Helper_User::is_admin() || Helper_User::is_reseller()) &&
-					(Helper_User::get_current_user_id() === $info->id) || 
-					(Helper_User::get_current_user_client_id() === $info->client_id)))){
+					if(Helper_User::is_admin() || Helper_User::get_current_user_id() == $user_id){
 						if($this->change_password($new_password, $user_info)){
 							Template::notify("success", "Password of {$user_info->username} has been changed successfully. The user has also been notified by email");
 						} else {

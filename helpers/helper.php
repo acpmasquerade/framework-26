@@ -17,4 +17,8 @@ class Helper {
 		}
 		return self::$db;
 	}
+
+	public static function db_debug(){
+		self::db()->debug();
+	}
 }

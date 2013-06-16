@@ -3,6 +3,11 @@
 require_once __DIR__."/_ezsql.core.class.php";
 require_once __DIR__."/_ezsql.class.php";
 
+/**
+ * 	@author : cooshal, acpmasquerade@gmail.com
+ *  @package : Framework26
+ */
+
 class DB extends ezSQL_mysql {
 
 	const default_limit = 10;
@@ -52,9 +57,14 @@ class DB extends ezSQL_mysql {
         }
 
         if ($select) {
-            $query = "SELECT {$select} FROM {$table_name} ";
+        	
+        	if(is_array($select) OR is_object($select)){
+        		$select = "`".implode("`,`" , $select)."`";
+        	}
+
+            $query = "SELECT {$select} FROM `{$table_name}` ";
         } else {
-            $query = "SELECT * FROM {$table_name} ";
+            $query = "SELECT * FROM `{$table_name}` ";
         }
 
 
@@ -79,6 +89,9 @@ class DB extends ezSQL_mysql {
             foreach ($where as $where_condition_key => $where_condition_value) {
                 $counter++;
 
+                $where_condition_key = mysql_real_escape_string($where_condition_key);
+                $where_condition_value = mysql_real_escape_string($where_condition_value);
+
                 if ($counter === 1) {
                     $query .= " WHERE `{$where_condition_key}` = '{$where_condition_value}'";
                 } else {
@@ -101,11 +114,16 @@ class DB extends ezSQL_mysql {
 
 		$keys = array_keys($values);
 
-		$query = "UPDATE `{$table}` ";
+		$table_escaped = mysql_real_escape_string($table);
+
+		$query = "UPDATE `{$table_escaped}` ";
 
 		$update_query = array();
+
 		foreach($values as $key=>$val){
-			$update_query[] = "`".mysql_real_escape_string($key)."`". " = ". "'".mysql_real_escape_string($val)."'";
+			$key_escaped = mysql_real_escape_string($key);
+			$val_escaped = mysql_real_escape_string($val);
+			$update_query[] = " `{$key_escaped}` = '{$val_escaped}' ";
 		}
 
 		$query .= "SET ";
@@ -173,17 +191,4 @@ class DB extends ezSQL_mysql {
 
 		return $res;
 	}
-
-	// public function select($query){
-	// 	$res = $this->execute_query($query);
-
-	// 	if(mysql_error()){
-	// 		return false;
-	// 	}
-
-	// 	$object = mysql_fetch_object($res);
-
-	// 	return $object;
-	// }
-
 }

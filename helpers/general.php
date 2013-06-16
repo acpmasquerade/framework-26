@@ -2,29 +2,8 @@
 
 class Helper_General {
 	
-	public static $networks = array("ntc", "ncell", "utl", "smart");
-
-	public static $shortcodes = array("5001", "4001", "3001", "2500", "6001");
-
-	const default_client_id = "demo";
-	const default_credits = "100";
-
-	const default_credit_topup_amount = "5";
-	const host = "http://www.sparrowsms.com";
-
-	public static function get_default_networks(){
-		return implode(",", self::$networks);
-	}
-
-	public static function get_default_shortcodes(){
-		$_default_shortcodes = array();
-
-		foreach (self::$networks as $some_network) {
-			$_default_shortcodes["{$some_network}"] = self::$shortcodes;
-		}
-
-		return json_encode($_default_shortcodes);
-	}
+	const host = "acpmasquerade.github.io";
+    const default_user_account_status = "active";
 
 	/**
      * 

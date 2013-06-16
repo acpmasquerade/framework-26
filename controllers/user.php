@@ -12,7 +12,7 @@ class Controller_User extends Asstroller {
 		Loader::helper("acl");
 
 
-		if(!Helper_User::is_admin() && !Helper_User::is_reseller()){
+		if(!Helper_User::is_admin()){
 			redirect(config::url(""));
 		}
 	}
@@ -26,7 +26,7 @@ class Controller_User extends Asstroller {
 			$where = "`status` != 'deleted' and id='{$current_user_id}'";
 		}
 
-		$users = Helper_User::get_users($where);
+		$users = Helper_User::get_user($where);
 
 		$view_data["users"] = $users;
 
@@ -36,13 +36,9 @@ class Controller_User extends Asstroller {
 
 	public function add(){
 
-		$formdata = form_post_data(array("client_id", "username", "password", "email", "phone", "user_role"));
+		$formdata = form_post_data(array("username", "password", "email", "phone", "user_role"));
 
 		if($_POST){
-
-			if(Helper_User::is_super_user()){
-				$client_id = trim($formdata["client_id"]);
-			}
 
 			$username = trim($formdata["username"]);
 			$password = trim($formdata["password"]);
@@ -51,12 +47,6 @@ class Controller_User extends Asstroller {
 			$user_role = trim($formdata["user_role"]);
 
 			$error_flag = false;
-
-			if(strlen($client_id) <= 0){
-				// client ID is not submitted from the form
-				// thus set the client ID based on the current user in the session
-				$client_id = $this->user->client_id;
-			}
 
 			if(strlen($username) <= 0){
 				$error_flag = true;
@@ -99,7 +89,7 @@ class Controller_User extends Asstroller {
 				// then check whether the current user in the session is admin or not
 				// only allow to add client_id and make admin, if the user is a super user
 
-				if(!Helper_User::is_super_user() && $user_role === USER_ROLE_ADMIN){
+				if(!Helper_User::is_admin() && $user_role === USER_ROLE_ADMIN){
 					// this means, a non-super user is attempting to make a user an admin
 					$user_role = USER_ROLE_USER;
 					Template::notify("error", "[Authority breached] You do not have permissions to assign an admin");
@@ -123,23 +113,22 @@ class Controller_User extends Asstroller {
 					// means that the account is not bound to the phone number
 					// now check if the username is already taken
 
-					if(!Helper_User::is_allowed_to_add_by_phone($username)){
+					if(!Helper_User::is_allowed_to_add_by_username($username)){
 						Template::notify("error","The username {$username} has already been taken. Please try another one");
 					} else {
 						$data["username"] = $username;
 						$data["password"] = Config::hash($password);
 						$data["phone"] = $phone;
-						$data["client_id"] = $client_id;
 						$data["email"] = $email;
 						$data["user_role"] = $user_role;
-						$data["status"] = "active";
+						$data["status"] = Helper_General::default_user_account_status;
 
 						// add the record to the database
 						// after adding the record, send an email to the user
 
-						$client_credits_id = Helper_User::add_user($data);
+						$user_id = Helper_User::add_user($data);
 
-						if($client_credits_id){
+						if($user_id){
 							// the insertion is successfull
 
 							// after inserting the user information into the database
@@ -150,17 +139,18 @@ class Controller_User extends Asstroller {
 							// 3. generate a random email token
 							// 4. set the is_email_activated attribute to no
 
-							$client_credits_meta_data[] = array(
-								"user_id" => $client_credits_id,
+							$add_user_meta_data[] = array(
+								"user_id" => $user_id,
 								"meta_key" => "is_phone_activated",
 								"meta_value" => "yes"
 							);
 
-							Helper_User::add_user_meta($client_credits_meta_data);
+							Helper_User::add_user_meta($add_user_meta_data);
 
-							$user_info["client_id"] = $client_id;
+							$user_info["username"] = $username;
 							$user_info["email"] = $email;
 							$user_info["password"] = $random_password;
+							$user_info["user_id"] - $user_id;
 
 							Helper_User::send_new_user_email($user_info);
 
@@ -174,48 +164,47 @@ class Controller_User extends Asstroller {
 		
 		Config::set("page_title", "New User Account");
 		$view_data = array();
-		$view_data["clients"] = Helper_Clients::get_distinct_client_ids();
 		$view_data["formdata"] = $formdata;
 		Template::set("users/add", $view_data);
 	}
 
+	/**
+	 * Login as any other user
+	 * A privileged user can switch his/her currently logged in session and login on behalf of any other user.
+	 */
 	public function login($user_id = NULL){
 		if(!$user_id){
 			Template::set("404", array());
+			return;
+		}
+
+		if(!Helper_User::is_admin()){
+			Template::notify("error", "Invalid User Account");
+			Template::set("404", array());
+			return false;
 		}
 
 		// get the user information from the database
 
-		$where = "`id` = $user_id AND `status` != 'deleted'";
+		$user_result = Helper_User::get_user_by_id($user_id);
 
-		$user_result = Helper_Clients::get_client_credit($where);
-
-		if(!$user_result){
+		if(!$user_result) {
 			Template::notify("error", "Invalid User Account");
 		} else {
-			// check if the current user in the session is reseller or not
-			// if so, check the user account being logged in as is a user level account - not reseller or admin
 
-			if(Helper_User::is_admin() || Helper_User::is_reseller()){
-				$user = Session::getvar("user");
+			if($user_result->status == "deleted"){
+				Template::notify("error", "User doesn't exist");
+			}
 
-				if(Helper_User::is_reseller()){
-					if($user->user_role !== USER_ROLE_USER AND ($user->client_id !== $user_result->client_id)){
-						Config::set("page_title", "Permission Denied");
-						Template::set("403", array());
-						return;
-					}
-				}
+			unset($user_result->password);
 
-				unset($user_result->password);
-				try {
-					Helper_User::register_session_variables($user_result);
-					Template::notify("success", "Successfully logged in as {$user_result->username}");
-					redirect(Config::url("dashboard"));
-				} catch(Exception $e){
-					Template::notify("error", $e->getMessage());
-					Template::notify("error", "Cannot Log In to the user's account");
-				}
+			try {
+				Helper_User::register_session_variables($user_result);
+				Template::notify("success", "Successfully logged in as {$user_result->username}");
+				redirect(Config::url("dashboard"));
+			} catch(Exception $e){
+				Template::notify("error", $e->getMessage());
+				Template::notify("error", "Cannot Log In to the user's account");
 			}
 		}
 		redirect(Config::url("user"));
@@ -252,37 +241,24 @@ class Controller_User extends Asstroller {
 			return;
 		}
 
-		if(Helper_User::is_admin() || Helper_User::is_reseller()){
+		if(Helper_User::is_admin()){
 
-			$where["id"] = $user_id;
-
-			$user_result = Helper_Clients::get_client_credit($where);
+			$user_result = Helper_User::get_user_by_id($user_id);
 
 			if(!$user_result){
 				Template::notify("error", "Invalid User Account");
 			} else {
-				// check if the current user in the session is reseller or not
-				// if so, check the user account being logged in as is a user level account - not reseller or admin
 
-				if(Helper_User::is_admin() || Helper_User::is_reseller()){
-					$user = Session::getvar("user");
+				$where = array();
+				$data = array();
 
-					if(Helper_User::is_reseller()){
-						if($user->user_role !== USER_ROLE_USER AND ($user->client_id !== $user_result->client_id)){
-							Config::set("page_title", "Permission Denied");
-							Template::set("403", array());
-							return;
-						}
-					}
+				$where["id"] = $user_id;
+				$data["status"] = "deleted";
 
-					// if nothing goes wrong, then we are ready to delete the user
-
-					$where["id"] = $user_id;
-					$data["status"] = "deleted";
-
-					if(Helper_Clients::update_client_credit($data, $where)){
-						Template::notify("success", "{$user_result->username} has been deleted from the system");
-					}
+				if(Helper_User::update_user($data, $where)){
+					Template::notify("success", "{$user_result->username} has been deleted from the system");
+				}else{
+					Template::notify("error", "{$user_result->username} delete unsuccessful.");
 				}
 			}
 		}

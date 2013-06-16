@@ -3,21 +3,40 @@
 	class Helper_User extends Helper{
 
 		public static function get_deleted_users_count(){
-			$x = self::db()->get_results("SELECT count(*) TOTAL from users WHERE status = '0'; ");
+			$x = self::db()->get_results("SELECT count(*) TOTAL from ".DB::db_tbl_users." WHERE status = 'deleted'; ");
 			return $x->TOTAL;
 		}
 
 		public static function get_user($where = array()){
-			return self::db()->get_results(db_tbl_users, $where);
+			return self::db()->get(DB::db_tbl_users, $where);
+		}
+
+		public static function get_user_meta($where = array()){
+			$result = self::db()->get(DB::db_tbl_users_meta, $where);
+			if($result){
+				return $result[0];
+			}
+		}
+
+		public static function get_user_metas($where = array()){
+			return self::db()->get(DB::db_tbl_users_meta, $where);
 		}
 
 		public static function get_user_by_id($user_id){
 			$user_id = mysql_real_escape_string(intval($user_id));
 			$x = self::db()->get_results("SELECT * FROM  users WHERE `id` = '{$user_id}'; ");
-			return $x;
+			
+			if(is_array($x) AND count($x)){
+				return $x[0];
+			}
+			
+			return false;
 		}
 
 		public function search($query = NULL){
+
+			$query = self::db()->escape($query);
+			
 			$where = "(`username` LIKE '%{$query}%' OR `email` LIKE '%{$query}%')";
 
 			try {
@@ -45,18 +64,28 @@
 		}
 
 		public static function get_user_by_username($username){
-			$username = mysql_real_escape_string($username);
-			$x = self::db()->get_results("SELECT * FROM  ".DB::db_tbl_users." WHERE `username` = '{$username}'; ");
-			return $x;
+			$username = self::db()->escape($username);
+			$x = self::db()->get_results("SELECT * FROM  ".DB::db_tbl_users." WHERE `username` = '{$username}' LIMIT 1; ");
+			return $x[0];
 		}
 
-		public static function login($client_id, $username, $password){
-
-			if(!$client_id || !$username || !$password){
+		public static function update_user($data, $where){
+			
+			if(!$where){
 				return false;
 			}
 
-			$query = "SELECT * FROM ".DB::db_tbl_users." WHERE client_id = '{$client_id}' AND username='{$username}'";
+			self::db()->update(DB::db_tbl_users, $data, $where);
+		}
+
+		public static function login($username, $password){
+
+			if(!$username || !$password){
+				return false;
+			}
+
+			$username = self::db()->escape($username);
+			$query = "SELECT * FROM ".DB::db_tbl_users." WHERE username='{$username}' AND `status` = 'active' LIMIT 1;";
 
 			$user_result = self::db()->get_results($query);
 
@@ -76,8 +105,13 @@
 					// which means that the user is authenticated with the credentials supplied
 					// since the user is authenticated into the system, enter the user's information in the session
 
+					// @todo - can hook something if required pre-authenticated
+
 					unset($user_result->password);
 					self::register_session_variables($user_result);
+
+					// @todo - can hook something if required post-authenticated
+
 					return true;
 				}
 			}
@@ -105,6 +139,9 @@
 		}
 
 		public static function is_allowed_to_add_by_phone($phone){
+
+			$phone = self::db()->escape($phone);
+
 			$query_by_phone = "SELECT * FROM ".DB::db_tbl_users." WHERE `phone` = '{$phone}' AND `status` != 'deleted'";
 
 			try {
@@ -127,7 +164,8 @@
 			// means that the account is not bound to the phone number
 			// now check if the username is already taken
 
-			$query_by_username = "SELECT * FROM ".DB::db_tbl_users." WHERE `client_id` = '{$client_id}' AND `username` = '{$username}' AND `status` != 'deleted' ";
+			$username = self::db()->escape($username);
+			$query_by_username = "SELECT * FROM ".DB::db_tbl_users." WHERE `username` = '{$username}' AND `status` != 'deleted' ";
 			
 			try {
 				$existing_user_by_username = self::db()->get_results($query_by_username);
@@ -143,29 +181,7 @@
 			return false;
 		}
 
-		public static function allowed_to_add_new_user($client_id){
-			// query the database if there is an admin for the particular client_id
-			// if there is, do not allow to add the user
-
-			$where = "`client_id` = '{$client_id}' AND `user_role` = '".USER_ROLE_ADMIN."' AND `status` != 'deleted'";
-
-			try {
-				$user = self::get_user($where);
-
-				if(!$user){
-					// if no errors occurred and still no rows returned, then there is no admin for the client_id
-					return true;
-				}
-
-			} catch(Exception $e){
-				Template::notify("error", $e->getMessage());
-			}
-
-			return false;
-		}
-
 		public static function add_user($data){
-
 
 			// check if there are any settings defined for the current domain
 			// if so, set the client_id, default credits, allowed network and allowed shortcode accordingly
@@ -184,6 +200,9 @@
 			return false;
 		}
 
+		/**
+		 * Add multiple meta records for a user 
+		 */
 		public static function add_user_meta($user_meta_data = array()){
 			if(!$user_meta_data){
 				return false;
@@ -194,7 +213,7 @@
 			}
 		}
 
-		public static function send_new_user_email($use_info){
+		public static function send_new_user_email($user_info){
 			// now compose an email to be sent to the user
 			// the email shall contain 
 			// 1. Welcome Note
@@ -221,7 +240,7 @@ EOT;
 			Loader::helper("general");
 
 			// SEND THE EMAIL TO THE RECIPIENT
-			$email_details["to"] = $email;
+			$email_details["to"] = $user_info["email"];
 			$email_details["subject"] = "Welcome";
 			$email_details["message"] = $email_content;
 			Helper_General::send_email($email_details);
@@ -230,5 +249,52 @@ EOT;
 		public static function gravatar_image_url($email, $size = 80){
 			$hash = md5(strtolower(trim($email)));
 			return "http://www.gravatar.com/avatar/{$hash}?s={$size}";
+		}
+
+		public static function search_user_by_email_verifcation_code($code){
+			// search meta
+			$meta = Helper_User::get_user_metas(array("meta_value"=>$code, "meta_key"=>"email_activation_code"));
+
+			if(count($meta) !== 1){
+				return false;
+			}
+
+			$user_id = $meta[0]->user_id;
+
+			$user_info["info"] = Helper_User::get_user_by_id($user_id);
+
+			foreach($meta as $key=>$val){
+				$user_info["meta"][$val->meta_key.""] = $val->meta_value;
+			}
+
+			return $user_info;			
+		}
+
+		public static function activate_email_for_user_id($user_id){
+			$data = array();
+			$where = array();
+
+			$data["meta_value"] = "yes";
+
+			$where["meta_key"] = "is_email_activated";
+			$where["user_id"] = $user_id;
+
+			return self::db()->update(DB::db_tbl_users_meta, $data, $where);
+		}
+
+		public static function generate_email_verification_code_for_user_id($user_id, $email_activation_code = NULL){
+
+			$user_meta_data = array();
+
+			if(!$email_activation_code){
+				$email_activation_code = md5(time().uniqid().rand(1000, 9999).$_SERVER["REMOTE_ADDR"]);
+			}
+
+			$user_meta_data[] = array("user_id"=>$user_id, "meta_key"=>"is_email_activated", "meta_value"=>"no");
+			$user_meta_data[] = array("user_id"=>$user_id, "meta_key"=>"email_activation_code", "meta_value"=>$email_activation_code);
+
+			Helper_User::add_user_meta($user_meta_data);
+
+			return $email_activation_code;
 		}
 	}

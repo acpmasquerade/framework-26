@@ -18,7 +18,7 @@ class Helper_ACL {
 
 		$user_role_base = Helper_User::get_current_user_role();
 
-		if(Helper_User::is_super_user()){
+		if(Helper_User::is_admin()){
 			return true;
 		} else {
 			if(self::$user_role["{$user_role_base}"] > self::$user_role["{$user_role_compare}"]){
@@ -38,13 +38,11 @@ class Helper_ACL {
 			"users",
 			"config",
 			"logs",
-			"credits"
 		);
 
 		$menus["reseller"] = array(
 			"users",
 			"logs",
-			"credits"
 		);
 
 		$menus["user"] = array(
@@ -59,8 +57,7 @@ class Helper_ACL {
 		$link_icons = array(
 			"users" => array("icon" => "user", "display" => "Users", "url" => "user"),
 			"config" => array("icon" => "wrench", "display" => "Configuration", "url" => "admin/config"),
-			"credits" => array("icon" => "briefcase", "display" => "Credits", "url" => "account/credits"),
-			"logs" => array("icon" => "list-alt", "display" => "Logs", "url" => "admin/logs"),
+			"logs" => array("icon" => "list-alt", "display" => "Logs", "url" => "logs"),
 		);
 
 		return $link_icons["{$link}"];

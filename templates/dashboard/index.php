@@ -1,7 +1,5 @@
 <?php $user = Session::getvar("user");?>
 
-<?php $chart_block_content = Template::getvar("chart_block_content");?>
-
 <style type="text/css">
     #chart-display-block {
         min-height: 295px;
@@ -55,7 +53,7 @@
                         <i class="icon-home"></i>
                         Welcome</p>
                     <div class="block-body">
-                        <p><strong>Welcome to Sparrow SMS Developer's Dashboard</strong></p>
+                        <p><strong>Welcome to Framework26 Dashboard</strong></p>
                         <br /><br /><br /><br />
                     </div>
                 </div>
@@ -104,31 +102,23 @@
                                     <th>Username</th>
                                     <td><?php echo $user->username;?></td>
                                 </tr>
-
                                 <tr>
-                                    <th>Client_Id</th>
-                                    <td><?php echo $user->client_id;?></td>
+                                    <th>Email</th>
+                                    <td><?php echo $user->email;?></td>
+                                </tr>
+                                <tr>
+                                    <th>Phone</th>
+                                    <td><?php echo $user->phone;?></td>
+                                </tr>
+                                <tr>
+                                    <th>Role</th>
+                                    <td><?php echo $user->user_role;?></td>
+                                </tr>
+                                <tr>
+                                    <th>Created</th>
+                                    <td><?php echo $user->created;?></td>
                                 </tr>
 
-                                <tr>
-                                    <th>Credits Consumed</th>
-                                    <td><?php echo $user->consumed_credits;?></td>
-                                </tr>
-
-                                <tr>
-                                    <th>Credits Remaining</th>
-                                    <td><?php echo $user->available_credits;?></td>
-                                </tr>
-
-                                <tr>
-                                    <th>Plan</th>
-                                    <td><?php echo $user->credit_policy;?></td>
-                                </tr>
-
-                                <tr>
-                                    <th>Credit Expires</th>
-                                    <td><?php echo $user->credit_expires;?></td>
-                                </tr>
                             </tbody>
                         </table>
                     </div><!--/ .block-body -->
@@ -138,9 +128,9 @@
                     <div class="block" id="chart-display-block">
                         <p class="block-heading">
                             <i class="icon-bookmark"></i>
-                            Credits consumption report
+                            Stats
                         </p>
-                        <?php echo $chart_block_content;?>
+                        <?php echo Template::getvar("chart_block_content");?>
                     </div><!--/ .block -->
                 </div><!--/ .span6 -->
             </div><!--/ .row-fluid -->                                                              

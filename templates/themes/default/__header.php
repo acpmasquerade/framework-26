@@ -93,7 +93,7 @@
                     <ul class="nav pull-right">
                         <li id="fat-menu" class="dropdown">
                             <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
-                                <i class="icon-user"></i> <?php echo $user->client_id; ?> / <?php echo $user->username; ?>
+                                <i class="icon-user"></i> <?php echo $user->username; ?>
                                 <i class="icon-caret-down"></i>
                             </a>
 
@@ -129,44 +129,15 @@
                 <div class="header">   
                     <?php if(Session::getvar("is_logged_in") === true): ?>
 
-                        <?php
-                            if(isset($user->available_credits)){
-                                $user_credits = $user->available_credits;
-                            } else {
-                                $user_credits = 0;
-                            }
-                        ?>
-
                         <div class="pull-right">
                             <ul class="stats">
                                 <li class="green">
                                     <i class="icon-briefcase"></i>
                                     <div class="details">
-                                        <span class="big"><?php echo $user_credits;?> credits</span>
-                                        <?php if($user->credit_expires == '0000-00-00 00:00:00'): ?>
-                                            <span>Lifetime validity</span>
-                                        <?php else: ?>
-
-                                        <?php
-                                            if(isset($user) AND $user){
-                                                $_account_expiry = strtotime($user->credit_expires);
-                                                $_validity_word = "";
-                                                $_time = time();
-                                                if($_time > $_account_expiry){
-                                                    $_validity_word = "Expired";
-                                                }else{
-                                                    echo floor ( ($_account_expiry - $_time) / 86400 ) ." Days";
-                                                    $_validity_word = floor ( ($_account_expiry - $_time) / 86400 ) ." Days Remaining";
-                                                }
-                                            }else{
-                                                $_validity_word = "api.sparrowsms.com";
-                                            }
-                                            
-                                            echo $_validity_word;
-                                            
-                                            ?>
-                                            <span></span>
-                                        <?php endif;?>
+                                        <span class="big">Account Status</span>
+                                        <span>
+                                            <?php echo $user->user_role;?>
+                                        </span>
                                     </div>
                                 </li>
                                 <li class="orange">
@@ -193,16 +164,14 @@
                     <div id="docs-container">
                         <?php
                         if (Config::get("header")) {
-                            $header_hero_unit = Config::get("header");
-                            if(file_exists(__DIR__."/{$header_hero_unit}.php")){
-                                include_once __DIR__ . "/{$header_hero_unit}.php";
+                            $view_header = Config::get("header");
+                            if(file_exists(__DIR__."/{$view_header}.php")){
+                                include_once __DIR__ . "/{$view_header}.php";
                             }else{
-                                include_once realpath(__DIR__ . "/../../{$header_hero_unit}.php");
+                                include_once realpath(__DIR__ . "/../../{$view_header}.php");
                             }
                         }
                         ?>
-
-
 
                     <?php endif; ?>
 

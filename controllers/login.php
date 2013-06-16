@@ -17,11 +17,10 @@ class Controller_Login extends Facetroller {
 	public function index(){
 
 		if($_POST){
-			$client_id = $_POST["client_id"];
 			$username = $_POST['username'];
 			$password = $_POST["password"];
 
-			if(!$client_id OR !$username OR !$password){
+			if(!$username OR !$password){
 				Template::notify("error", "Insufficient Parameters");
 				redirect(Config::url("login"));
 				return;
@@ -30,7 +29,7 @@ class Controller_Login extends Facetroller {
 			$username_escaped = $this->db->escape($username);
 			$password_escaped = Config::hash($password);
 
-			if(Helper_User::login($client_id, $username, $password)){
+			if(Helper_User::login($username, $password)){
 				redirect("dashboard");
 			} else {
 				Template::notify("error","Invalid Login details. Please check your login information and try again");
@@ -92,193 +91,84 @@ class Controller_Login extends Facetroller {
 				// if there are no errors, then check for the existing record, based on 
 			 	// 1. phone number
 			 	// 2. or client_id - username pair
-
-				if(!Helper_User::is_allowed_to_add_by_phone($phone)){
-					Template::notify("error","There is already an account associated with the phone number '{$phone}'");
-				} else {
+				
 					// means that the account is not bound to the phone number
 					// now check if the username is already taken
 
-					if(!Helper_User::is_allowed_to_add_by_phone($username)){
-						Template::notify("error","The username {$username} has already been taken. Please try another one");
-					} else {
-						$random_password = random_password();
+				if(!Helper_User::is_allowed_to_add_by_username($username)){
+					Template::notify("error","The username {$username} has already been taken. Please try another one");
+				} else {
+					$random_password = random_password();
 
-						$data["client_id"] = $client_id;
-						$data["username"] = $username;
-						$data["password"] = Config::hash($random_password);
-						$data["email"] = $email;
-						$data["phone"] = $phone;
+					$data["username"] = $username;
+					$data["password"] = Config::hash($random_password);
+					$data["email"] = $email;
+					$data["phone"] = $phone;
 
-						// add the record to the database
-						// after adding the record, send an email to the user
+					// add the record to the database
+					// after adding the record, send an email to the user
 
-						$client_credits_id = Helper_User::add_user($data);
+					$client_credits_id = Helper_User::add_user($data);
 
-						if($client_credits_id){
-							// the insertion is successfull
+					if($client_credits_id){
+						// the insertion is successfull
 
-							// after inserting the user information into the database
-							// add the meta information to verify phone number as well as email
+						// after inserting the user information into the database
+						// add the meta information to verify phone number as well as email
 
-							// 1. generate 5 digit random code and sent to the user via SMS
-							// 2. set the is_phone_activated attribute to no
-							// 3. generate a random email token
-							// 4. set the is_email_activated attribute to no
+						$user_info["client_id"] = $client_id;
+						$user_info["email"] = $email;
+						$user_info["password"] = $random_password;
+						$user_info["username"] = $username;
 
-							$client_credits_meta_data[] = array(
-								"user_id" => $client_credits_id,
-								"meta_key" => "is_phone_activated",
-								"meta_value" => "no"
-							);
+						Helper_User::send_new_user_email($user_info);
 
-							$phone_activation_code = rand(1000,9999);
-
-							$client_credits_meta_data[] = array(
-								"user_id" => $client_credits_id,
-								"meta_key" => "phone_activation_code",
-								"meta_value" => $phone_activation_code
-							);
-
-							Helper_User::add_user_meta($client_credits_meta_data);
-
-							$this->send_sms($phone, $phone_activation_code, $username);
-
-							$user_info["client_id"] = $client_id;
-							$user_info["email"] = $email;
-							$user_info["password"] = $random_password;
-
-							Helper_User::send_new_user_email($user_info);
-
-							Template::notify("success", "Thank You for signing up with Sparrow SMS. Please check your email for login information".PHP_EOL."Your password is {$random_password}");
-							redirect(Config::url("login"));
-						}
-
+						Template::notify("success", "Thank You for signing up.
+							Please check your email for login information
+							<br />
+							Your password is {$random_password}");
+						redirect(Config::url("login"));
 					}
 				}
 
 			}
 		}
 
-		Config::set("page_title", "Sparrow SMS API SIgnup");
+		Config::set("page_title", "Framework26 Signup");
 		Template::set("api-signup", array());
 	}
 
-	private function send_sms($to, $phone_activation_code, $username){
-		// send an SMS to the user's phone number along with the activation code
+	public function verify($verification_code){
+        if(!isset($verification_code)){
+                Template::notify("error", 'Verification code is missing.');
+                redirect(Config::url("login"));
+        }
 
-		$sms_text = "Send API {$phone_activation_code} to 4001 to activate your account. Sparrow SMS";
+        $user = Helper_User::search_user_by_email_verifcation_code($verification_code);
 
-		Loader::helper("sms");
+        if(!$user){
+            Template::notify("error", 'Invalid Verification code.');
+            redirect(Config::url("login"));
+	    }
 
-		$log_data["username"] = $username;
+        if(isset($user["meta"]["is_email_activated"])){
+                $is_email_activated = $user["meta"]["is_email_activated"];
 
-		Helper_Sms::push($to, $sms_text, $log_data);
-	}
+                if($is_email_activated === 'yes'){
+                        Template::notify("warning", 'Email already verified.');
+                        redirect(Config::url("login"));
+                }else{
+                        Helper_User::activate_email_for_user_id($user['info']->id);
+                }
+        }else{
+                Helper_User::generate_email_verification_code_for_user_id($user['info']->id, $verification_code);
+                Helper_User::activate_email_for_user_id($user['info']->id);
+        }
 
-	public function verify($type){
-		if(!isset($type)){
-			die("Invalid Attempt !");
-		}
+        Template::notify("success", "Email verified. Please login");
+        redirect(Config::url("login"));
 
-		if(isset($_REQUEST["code"])){
-			$activation_code = trim($_REQUEST["code"]);
-		} else {
-			die("Invalid Attempt !");
-		}
-
-		switch ($type) {
-			case "phone":
-				// if the mode of activation is phone number
-				// then match the phone number with the record in the database
-
-				if(isset($_REQUEST["phone"])){
-					$phone_number = $_REQUEST["phone"];
-				}
-
-				$where["phone"] = $phone_number;
-
-				break;
-
-			case "email":
-
-				if(isset($_REQUEST["email"])){
-					$email = $_REQUEST["email"];
-				}
-
-				$where["email"] = $email;
-
-				break;
-			
-			default:
-				die("Invalid Activation Mode");
-				break;
-		}
-
-		$client = Helper_Clients::get_client($where);
-
-		if(isset($client["info"])){
-			// there is a user associated with that user info/attributes, either email or phone number
-			// get the client_id
-			// P.S. this client_id is not the ALPHABETICAL client_id column, rather it is the primary key
-			// to maintain legacy and backward compatibility
-
-			$user_id = $client["info"]->id;
-
-			$client_meta = $client["meta"];
-
-			if(!isset($client_meta["is_phone_activated"])){
-				die("Please request a new activation code");
-			}
-
-			$is_phone_activated = trim($client_meta["is_phone_activated"]);
-
-			if($is_phone_activated !== "no"){
-				// since the phone is already activated, throw an error to the user
-				die("Invalid Attempt. Your phone number is already activated.");
-			}
-
-			// 1. get the phone activation code from the database
-			// 2. compare it with the code sent by the user
-			// 3. if it matches, activate the account
-
-			if(!isset($client_meta["phone_activation_code"])){
-				die("Invalid Code. Please request a new activation code.");
-			}
-
-			$phone_activation_code = trim($client_meta["phone_activation_code"]);
-
-			if($phone_activation_code === $activation_code){
-				// the activation code sent by the user matches with the one stored in the database
-				// thus activate the account
-				// set the is_phone_activated attribute to "YES"
-
-				$client_credit_data["status"] = "active";
-
-				$where = array();
-
-				$where["id"] = $user_id;
-
-				if($this->db->update(DB::db_tbl_client_credits, $client_credit_data, $where)){
-					// the main account is set activated
-
-					$where = array();
-
-					$client_credit_meta_data["meta_value"] = "yes";
-					$where["meta_key"] = "is_phone_activated";
-					$where["user_id"] = $user_id;
-
-					$this->db->update(DB::db_tbl_client_credits_meta, $client_credit_meta_data, $where);
-
-					die("activated");
-				} else {
-					die("There was an error activating your account. Please try again later");
-				}
-			} else {
-				die("Incorrect Activation Code");
-			}
-		}
-	}
+    }
 
 	public function credit_topup(){
 
