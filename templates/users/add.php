@@ -57,26 +57,3 @@ $formdata = Template::getvar("formdata");
 	</div>
 
 </form>
-
-
-
-<SCRIPT TYPE="text/javascript">
-	var new_client_id = "";
-	
-	function prompt_new_client_id(){
-		new_client_id = window.prompt("Please choose a new client_id");
-		validate_new_client_id();
-	}
-
-	function validate_new_client_id(){
-		$.ajax("<?php echo Config::url('user/');?>")
-	}
-
-	$(function(){
-		$("#anchor-add-new-client").click(function(){
-			// throw a bootbox or any form to take a new client_id as input.
-			// alert("@todo - throw a bootbox");
-			prompt_new_client_id();
-		});
-	})
-</SCRIPT>

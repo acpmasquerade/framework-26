@@ -79,10 +79,11 @@
 
 			self::execute_query($query);
 
-			if(mysql_errno())
+			if(mysql_errno()){
 				return false;
-			else
+			}else{
 				return true;
+			}
 		}
 
 		public static function execute_query($query){
@@ -91,10 +92,11 @@
 			
 			self::set_query($query);
 			
-			if(mysql_error())
+			if(mysql_error()){
 				return false;
-			else
+			}else{
 				return $res;
+			}
 		}
 
 		public static function affected_rows(){

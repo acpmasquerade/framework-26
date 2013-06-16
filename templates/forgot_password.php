@@ -11,7 +11,7 @@
 					<button type="submit" class="btn btn-primary pull-right">Reset</button>
 
 					<small><em>
-						* Please enter your email address
+						* Please enter your phone number
 					</em></small>
 
 					<div class="clearfix"></div>
