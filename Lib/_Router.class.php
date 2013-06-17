@@ -98,16 +98,35 @@
 							break;
 						}
 
+						// alternate controller is the controller with same name as the directory name
+						$controller_alterate = $controller;
+						$controller_include_path_alternate = realpath("{$controller_include_dir}/{$controller_alterate}.php");
+
+						// preferred controller is the controller with the name as in argument
 						$controller = array_shift($controller_arguments);
 						$controller_include_path = realpath("{$controller_include_dir}/{$controller}.php");
-						
+
+						// if the preferred controller exists, thats it
 						if($controller_include_path){
 							break;
 						}else{
-							if($controller_arguments){
-								continue;
-							}else{
+							// if the preffered controller does not exist, 
+							// check for the alternate controller
+							if($controller_include_path_alternate){
+								// prepend the chopped argument back to the arguments array
+								array_unshift($controller_arguments, $controller);
+								// and define the alternate controller as the actual controller								
+								$controller = $controller_alterate;
+								// and define the alternate controller path as the actual controller path
+								$controller_include_path = $controller_include_path_alternate;
+								// break, its over with the loop now.
 								break;
+							}else{
+								if($controller_arguments){
+									continue;
+								}else{
+									break;
+								}
 							}
 						}
 					}
