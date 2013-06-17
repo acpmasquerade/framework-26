@@ -1,5 +1,5 @@
-26framework 
-===========
+Framework-26
+============
 
 Probably an ultra lightweight PHP framework
 
