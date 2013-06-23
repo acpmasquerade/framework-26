@@ -148,6 +148,33 @@ class DB extends ezSQL_mysql {
 			return true;
 	}
 
+	public function delete($table, $where = array()){
+		if( !$table ) {
+			return false;
+		}
+
+		$table = $this->escape($table);
+
+		// build the delete query
+		$query = "DELETE FROM `{$table}` ";
+
+		if($where){
+			$where = $this->_where($where);
+
+			$query .= $where;
+		}
+
+		// after building the query, execute it
+		$this->query($query);
+
+		if( mysql_errno() ){
+			return false;
+		}
+		else {
+			return $this->affected_rows();
+		}
+	}
+
 	public function execute_query($query){
 		$this->get_results($query);
 	}
