@@ -59,10 +59,10 @@
                     data-max-results=\"{$max_results}\" 
                     data-page-number=\"{$page_number}\"
                     data-last-page=\"{$last_page}\"
-                    data-id=\"pagination\"><ul>";
+                    data-id=\"pagination\">";
 
             if (is_array($postdata)) {
-                echo "<form name='pagination_form' method='post'>";
+                echo "<form name='pagination_form' method='post' style='display:none'>";
                 foreach ($postdata as $key => $value) {
                     echo "<input type='hidden' name='{$key}' value='{$value}'>";
                 }
@@ -94,6 +94,7 @@
             }
 
             if ($last_page > 1) {
+                echo "<ul>";
                 if ($show_title):
                     echo "<h2>Pages</h2>";
                 endif;
