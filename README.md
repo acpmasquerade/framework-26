@@ -66,9 +66,17 @@ Themes
 ------
 Themes stay inside templates/themes/ folder 
 
+
+Configuration
+-------------
+Configuration files are located under Config folder. *_Application.php* is the main configuration file.
+
+
 Directory Structure
 -------------------
-      .
+        ├── Config
+        │   ├── _Application.php
+        │   ├── ... (add your configuration files if required.)
     	├── controllers
     	│   ├── account.php
     	│   ├── admin.php
