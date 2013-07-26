@@ -1,4 +1,5 @@
 <?php
+
 	if(!function_exists("redirect")){
 		function redirect($url){
 			// check notifications
@@ -115,3 +116,31 @@
 			return "<a href='{$link}' ".implode(" ", $attrs).">{$text}</a>";
 		}
 	}
+
+
+	// Indexed object array, ignore duplicates
+	// If different objects exist for same index, the later one gets priority
+	define("UTIL_IOB_IGNORE_DUPLICATES", 0);
+	// Whatever be the case, items will be grouped as array
+	define("UTIL_IOB_FORCE_ARRAY", 1);
+
+	if(!function_exists("indexed_object_array")){
+		function indexed_object_array($haystack, $needle, $flag = UTIL_IOB_FORCE_ARRAY){
+			$result_object_array = array();
+	        foreach ($haystack as $some_key => $some_object) {
+	            $index = $some_object->{$needle};
+	            if($flag == UTIL_IOB_IGNORE_DUPLICATES){
+	            	$result_object_array["{$index}"] = $some_object;
+	            }else{
+	            	if(!is_array($result_object_array["{$index}"])){
+	            		$result_object_array["{$index}"] = array();
+	            	}
+
+	            	$result_object_array["{$index}"][] = $some_object;
+	            }
+	        }
+	        return $result_object_array;
+		}
+	}
+
+
