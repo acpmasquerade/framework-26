@@ -75,7 +75,7 @@
 				return false;
 			}
 
-			self::db()->update(DB::db_tbl_users, $data, $where);
+			return self::db()->update(DB::db_tbl_users, $data, $where);
 		}
 
 		public static function login($username, $password){
