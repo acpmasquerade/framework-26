@@ -28,6 +28,10 @@
 	 *
 	 *	default-email - 
 	 *	; From Email address for automatic emails
+	 *
+	 *	regex_valid_phone_number
+	 *	; Used by is_valid_phone_number method to determine whether an input is valid or not.
+	 *	; can be configurable so that number validation can be chosen as per requirements.
 	 */
 
 	switch(ENVIRONMENT){
@@ -35,18 +39,25 @@
 			error_reporting(0);
 			Config::set("base_url", "http://production.yourapp.com/");
 
+			// Database
 			Config::set("db", array(
 				"user"=>"dbuser", 
 				"password"=>"dbpass", 
 				"name"=>"dbname", 
 				'host'=>"localhost"));
 
+			// Debug
 			Config::set("db_saftey_debug", true);
 			Config::set("debug_bar", false);
 			Config::set("kint_debug", false);
 
+			// Session
             Config::set("session_scope_key", "framework26");
 
+            // Regular expressions
+            Config::set("regex_valid_phone_number", "/^(977)?9[6-8][0-9]{8}$/");
+
+            // Email
 			Config::set("default-email-name", "acpmasquerade");
 			Config::set("default-email", "info@acpmasquerade.com");
 
@@ -67,6 +78,8 @@
 			Config::set("kint_debug", false);
 
             Config::set("session_scope_key", "framework26");
+
+            Config::set("regex_valid_phone_number", "/^(977)?9[6-8][0-9]{8}$/");
 
 			Config::set("default-email-name", "acpmasquerade");
 			Config::set("default-email", "info@acpmasquerade.com");
@@ -89,6 +102,8 @@
 			Config::set("kint_debug", true);
 
 			Config::set("session_scope_key", "framework26");
+
+            Config::set("regex_valid_phone_number", "/^(977)?9[6-8][0-9]{8}$/");
 
 			Config::set("default-email-name", "acpmasquerade");
 			Config::set("default-email", "info@acpmasquerade.com");
