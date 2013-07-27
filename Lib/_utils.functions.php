@@ -69,7 +69,7 @@
 
 	/** Is a valid phone number or not **/
 	function is_valid_phone_number($phone_number){
-	    $number_pattern = "/^(977)?9[6-8][0-9]{8}$/";
+	    $number_pattern = Config::get("regex_valid_phone_number");
 	    return(preg_match($number_pattern, $phone_number));
 	}
 
