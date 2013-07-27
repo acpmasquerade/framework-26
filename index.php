@@ -20,6 +20,11 @@
 
 	require_once __DIR__."/Config/_Application.php";
 
+	// Load the Kint Debugger, if enabled
+	if(Config::get("kint_debug") === true){
+		Bootstrap::Kint_Debugger();
+	}
+
 	define("SITE_URL", Config::get("base_url"));
 	define("DEFAULT_EMAIL_NAME", Config::get("default-email-name"));
 	define("DEFAULT_EMAIL", Config::get("default-email"));

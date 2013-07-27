@@ -23,7 +23,7 @@ class Controller_User extends Asstroller {
 			$where = "`status` != 'deleted'";
 		} else {
 			$current_user_id = Helper_User::get_current_user_id();
-			$where = "`status` != 'deleted' and id='{$current_user_id}'";
+			$where = "`status` != 'deleted' AND id='{$current_user_id}'";
 		}
 
 		$users = Helper_User::get_user($where);

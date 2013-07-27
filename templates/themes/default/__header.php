@@ -84,6 +84,33 @@
     <body class=""> 
         <!--<![endif]-->
 
+        <?php if(DebugBar::is_enabled() === true): ?>
+            <div id='framework-26-debug-bar'>
+                <div class="switch" style="margin:0;padding:0;width:100%;height:5px;background:black;color:white;text-align:center;">
+                    <a href='javascript:void();' style='padding:2px 5px;font-size:10px;display:inline-block;position:absolute;
+                                                        z-index:1000;
+                                                        text-align:center;
+                                                        background:white;
+                                                        border:1px solid black;
+                                                        border-top:none;
+                                                        '>
+                        <i class='icon icon-signal'></i>
+                        Toggle DebugBar
+                    </a>
+                    <script type="text/javascript">
+                        $(function(){
+                            $("#framework-26-debug-bar .switch a").click(function(){
+                                $("#framework-26-debug-bar .dump").slideToggle();
+                            })
+                        })
+                    </script>
+                </div>
+                <div style="display:none" class="dump">
+                    <?php (DebugBar::dump()); ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <div class="navbar">
             <div class="navbar-inner">
                 <?php if (Session::getvar("is_logged_in") === true): ?>

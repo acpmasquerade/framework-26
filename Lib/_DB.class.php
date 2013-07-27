@@ -1,19 +1,24 @@
 <?php
 	
+	/**
+	 *	The original database class for Framework-26
+	 *	info@acpmasquerade.com
+	 *	Framework-26
+	 **/
 	class DB {
 		private static $last_query;
 
 		const default_limit = 10;
 
-		static function set_query($query){
+		private static function set_query($query){
 			self::$last_query = $query;
 		}
 
-		static function get_query(){
+		private static function get_query(){
 			return self::$last_query;
 		}
 
-		function last_query(){
+		public static function last_query(){
 			return self::get_query();
 		}
 

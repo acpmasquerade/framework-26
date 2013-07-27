@@ -5,8 +5,41 @@ require_once __DIR__."/_ezsql.class.php";
 
 /**
  * 	@author : cooshal, acpmasquerade@gmail.com
- *  @package : Framework26
+ *  @package : Framework-26
  */
+
+/**
+ *	The Debugger Class for Database
+ *	info@acpmasquerade.com
+ *	Framework-26
+ */
+class DBDebug{
+	public static function dump($file, $log_array){
+		$realpath = realpath(__DIR__."/../Logs/{$file}");
+		
+		if(!$realpath){
+			$realpath = realpath(__DIR__.'/../Logs/debug.log');
+		}
+
+		ob_start();
+		print_r($log_array);
+		$log_text = ob_get_contents();
+		ob_end_clean();
+
+		file_put_contents
+		(
+			realpath($realpath), 
+			$log_text."\n=========\n", 
+			FILE_APPEND
+		);
+
+		if(DebugBar::is_enabled() === true){
+			DebugBar::append($file, $log_array);
+		}
+
+		return true;
+	}
+}
 
 class DB extends ezSQL_mysql {
 
@@ -57,7 +90,7 @@ class DB extends ezSQL_mysql {
         }
 
         if ($select) {
-        	
+
         	if(is_array($select) OR is_object($select)){
         		$select = "`".implode("`,`" , $select)."`";
         	}
@@ -72,7 +105,17 @@ class DB extends ezSQL_mysql {
             $query .= $this->_where($where);
         }
 
+        if($group_by){
+			$group_by = mysql_real_escape_string($group_by)        	;
+            $query .= " GROUP BY {$group_by}";
+        }
+        if($order_by){
+        	$order_by = mysql_real_escape_string($order_by)        	;
+            $query .= " ORDER BY {$order_by}";
+        }
+
         if($limit){
+        	$limit = intval($limit);
             if(!$offset){
                 $offset = 0;
             }
@@ -99,6 +142,12 @@ class DB extends ezSQL_mysql {
                 }
             }
         } else {
+        	// It is never recommended to send a direct query string unless you are sure that the string is escaped.
+        	// There won't be escaping in case of string WHERE condition.
+        	if(Config::get("db_saftey_debug") === true){
+        		$where_call_log = array("date"=>date('r'), "where"=>$where, "backtrace"=>debug_backtrace());
+        		DBDebug::dump("unescaped-db-where.log", $where_call_log);
+        	}        	
             $query .= " WHERE {$where}";
         }
         return $query;

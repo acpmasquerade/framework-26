@@ -1,0 +1,3 @@
+[submodule "Lib/third-party/kint"]
+	path = Lib/third-party/kint
+	url = https://github.com/raveren/kint.git
