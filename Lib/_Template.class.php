@@ -16,9 +16,9 @@
 			$themed_content_filename = __DIR__."/../templates/themes/".self::current_theme."/{$page}.php";
 
 			if(file_exists($themed_content_filename)){
-				include_once $themed_content_filename;
+				include $themed_content_filename;
 			}else{
-				include_once $default_content_filename;
+				include $default_content_filename;
 			}
 
 			/** 
@@ -46,9 +46,9 @@
 			$themed_content_filename = __DIR__."/../templates/themes/".self::current_theme."/{$view_file}.php";
 
 			if(file_exists($themed_content_filename)){
-				include_once $themed_content_filename;
+				include $themed_content_filename;
 			}else{
-				include_once $default_content_filename;
+				include $default_content_filename;
 			}
 		}
 
