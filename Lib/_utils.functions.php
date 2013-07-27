@@ -1,13 +1,31 @@
 <?php
 
 	if(!function_exists("redirect")){
-		function redirect($url){
+		/**
+		 * Redirect to a specific location. Retains the notifications if any.
+		 * @param $url = URL to be redirected to
+		 * @param $http_code = HTTP Status Code to be forced, ONLY (201, and 3XX are supported). Refer: http://php.net/manual/en/function.header.php
+		 * @param $headers = extra headers array if required
+		 */
+		function redirect($url, $http_code = NULL, $headers = array()){
 			// check notifications
 			if(Template::has_notifications()){
 				Template::persist_notifications();
 			}
+
+			if(isset($http_code)){
+				header("HTTP/1.1 {$http_code}");
+			}
+
+			if($headers AND is_array($headers)){
+				foreach($headers as $h){
+					header("{$h}");
+				}
+			}
+
 			header("Location: {$url}");
-			die();
+			
+			exit;
 		}
 	}
 
