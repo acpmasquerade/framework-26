@@ -161,4 +161,23 @@
 		}
 	}
 
+	if(!function_exists("is_ajax")){		
+		/**
+		 * Checks if the request is an AJAX request or not ?
+		 */
+		function is_ajax() {
+	        if (!defined("REQUEST_AJAX")) {
+	            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == "XMLHttpRequest") {
+	                define("REQUEST_AJAX", TRUE);
+	                return TRUE;
+	            } else {
+	                define("REQUEST_AJAX", FALSE);
+	                return FALSE;
+	            }
+	        } else {
+	            return REQUEST_AJAX;
+	        }
+	    }
+	}
+
 
