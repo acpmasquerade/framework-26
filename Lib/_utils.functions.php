@@ -101,7 +101,7 @@
 
 	if(!function_exists("anchor")){
 		function anchor($link, $text = NULL, $attrs = NULL){
-			if(!$text){
+			if(!isset($text) OR $text === NULL){
 				$text = $link;
 			}
 
