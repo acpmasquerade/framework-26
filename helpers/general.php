@@ -55,4 +55,32 @@ class Helper_General extends Helper{
         }
     }
 
+    public static function is_valid_url($url){
+        if(preg_match("#((http|https)://(\S*?\.\S*?))(\s|\;|\)|\]|\[|\{|\}|,|\"|'|:|\<|$|\.\s)#ie", $url)){
+            return true;
+        }
+        return false;
+    }
+
+    public static function is_not_a_private_ip($ip_address_or_host){
+
+        $url_parsed = parse_url($ip_address_or_host);
+        
+        if(isset($url_parsed["host"])){
+            $validate = $url_parsed["host"];
+        }elseif(isset($url_parsed["path"])){
+            $validate = $url_parsed["path"];
+        }else{
+            return NULL;
+        }
+
+        $host_by_name = gethostbyname($validate); 
+
+        if(filter_var($host_by_name, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 }
