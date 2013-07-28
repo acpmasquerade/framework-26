@@ -1,6 +1,8 @@
 Framework-26
 ============
 
+[![Build Status](https://secure.travis-ci.org/acpmasquerade/framework-26.png?branch=master)](http://travis-ci.org/acpmasquerade/framework-26)
+
 Probably an ultra lightweight PHP framework
 
 Yet another ?
