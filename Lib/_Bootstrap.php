@@ -5,6 +5,11 @@
 	require_once __DIR__."/_Loader.class.php";
 	require_once __DIR__."/_Template.class.php";
 	// require_once __DIR__."/_DB.class.php";
+
+	// Database	
+	require_once __DIR__."/_ezsql.core.class.php";
+	require_once __DIR__."/_ezsql.class.php";
+	require_once __DIR__."/../Config/_DatabaseConfiguration.php";
 	require_once __DIR__."/_Database.class.php";
 	require_once __DIR__."/_DebugBar.class.php";
 	require_once __DIR__.'/_utils.functions.php';
@@ -23,6 +28,8 @@
 
 	// Load any notifications from earlier page before redirection
 	Template::load_persist_notifications();
+
+	require_once __DIR__."/../Config/_Application.php";
 
 /** End of file **/
 /** _Bootstrap.php **/

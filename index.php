@@ -18,8 +18,6 @@
 		die("Unable to determine the runtime environment.");
 	}
 
-	require_once __DIR__."/Config/_Application.php";
-
 	// Load the Kint Debugger, if enabled
 	if(Config::get("kint_debug") === true){
 		Bootstrap::Kint_Debugger();

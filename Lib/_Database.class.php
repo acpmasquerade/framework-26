@@ -1,7 +1,4 @@
 <?php
-	
-require_once __DIR__."/_ezsql.core.class.php";
-require_once __DIR__."/_ezsql.class.php";
 
 /**
  * 	@author : cooshal, acpmasquerade@gmail.com
@@ -41,13 +38,7 @@ class DBDebug{
 	}
 }
 
-class DB extends ezSQL_mysql {
-
-	const default_limit = 10;
-
-	const db_tbl_users = "users";
-	const db_tbl_users_meta = "users_meta";
-	const db_tbl_announcements = "announcements";
+class DB extends DatabaseConfiguration {
 
 	public function insert($table, $values){
 		$query = "";
@@ -109,6 +100,7 @@ class DB extends ezSQL_mysql {
 			$group_by = mysql_real_escape_string($group_by)        	;
             $query .= " GROUP BY {$group_by}";
         }
+
         if($order_by){
         	$order_by = mysql_real_escape_string($order_by)        	;
             $query .= " ORDER BY {$order_by}";
@@ -191,10 +183,12 @@ class DB extends ezSQL_mysql {
 
 		$this->query($query);
 
-		if(mysql_errno())
+		if( mysql_errno() ){
 			return false;
-		else
+		}
+		else {
 			return true;
+		}
 	}
 
 	public function delete($table, $where = array()){
@@ -255,16 +249,23 @@ class DB extends ezSQL_mysql {
 
 		$res = $this->execute_query("{$query} {$pagination_block} ");
 
-		if(mysql_error())
+		if( mysql_error() ) {
 			return false;
-
-		// $resultset = array();
-		// while($object = mysql_fetch_object($res)){
-		// 	$resultset[] = $object;
-		// }
-
-		// return $resultset;
+		}
 
 		return $res;
+	}
+
+	public function begin_transaction(){
+		$this->query("SET AUTOCOMMIT=0");
+		$this->query("START TRANSACTION");
+	}
+
+	public function commit(){
+		$this->query("COMMIT");
+	}
+
+	public function rollback(){
+		$this->query("ROLLBACK");
 	}
 }
