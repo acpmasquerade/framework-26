@@ -16,8 +16,8 @@
 		public static $controller_arguments;
 
 		public static function initialize(){
-			if (isset($_SERVER['PATHINFO']) AND strlen($_SERVER["PATHINFO"]) > 1) {
-				Router::$request_path = substr($_SERVER["PATHINFO"], 1);
+			if (isset($_SERVER['PATH_INFO']) AND strlen($_SERVER["PATH_INFO"]) > 1) {
+				Router::$request_path = substr($_SERVER["PATH_INFO"], 1);
 			} else {
 				Router::$request_path = "dashboard";
 			}
