@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="tests/framework-26/bootstrap.php" colors="true">
+<phpunit colors="true">
     <php>
-        <var name="db_dsn" value="mysql:dbname=framework26;host=localhost"/>
+        <var name="db_dsn" value="mysql:dbname=framework26_test;host=localhost"/>
         <var name="db_username" value="root"/>
         <var name="db_password" value=""/>
     </php>
 
     <testsuites>
-        <testsuite name="Framework-26 Test Suite">
-            <directory>./tests/framework-26/</directory>
+        <testsuite name="X">
+            <directory suffix="Test.php">./tests/framework-26</directory>
         </testsuite>
     </testsuites>
-
-    <filter>
-        <whitelist>
-            <directory>./</directory>
-            <exclude>
-                <directory>./tests/framework-26/</directory>
-            </exclude>
-        </whitelist>
-    </filter>
 </phpunit>

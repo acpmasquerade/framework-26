@@ -5,3 +5,6 @@ nbproject
 mofald.sublime-project
 mofald.sublime-workspace
 issues/*
+Logs/
+tests/
+dir.txt

@@ -76,6 +76,7 @@
 
 	if(!function_exists("ajax_die")){
 		function ajax_die($var = array()){
+			header("Content-Type: application/json");
 			die(json_encode($var));
 		}
 	}
