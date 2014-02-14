@@ -44,7 +44,7 @@ $formdata = Template::getvar("formdata");
 			<label class="control-label" for="user_role">User Role</label>
 			<div class="controls">
 				<select name="user_role" id="user_role">
-					<option value="admin">User</option>					
+					<option value="user">User</option>					
 					<option value="admin">Admin</option>
 				</select>
 			</div>
