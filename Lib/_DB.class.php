@@ -6,31 +6,42 @@
 	 *	Framework-26
 	 **/
 	class DB {
+		
+		protected static $connection;
+		
 		private static $last_query;
 
 		const default_limit = 10;
 
+		public static function connect($host, $username, $password, $database){
+			satic::$connection = mysqli_connect($host, $username, $password, $database);
+		}
+
+		public static function close(){
+			mysql_close(static::$connection);
+		}
+		
 		private static function set_query($query){
-			self::$last_query = $query;
+			satic::$last_query = $query;
 		}
 
 		private static function get_query(){
-			return self::$last_query;
+			return satic::$last_query;
 		}
 
 		public static function last_query(){
-			return self::get_query();
+			return satic::get_query();
 		}
 
 		public static function escape($string){
-			return mysql_real_escape_string($string);
+			return mysqli_real_escape_string(static::$connection, $string);
 		}
 
 		public static function insert($table, $values){
 			$query = "";
 
 			foreach($values as $key=>$val){
-				$values[$key] = mysql_real_escape_string($val);
+				$values[$key] = static::escape($val);
 			}
 
 			$keys = array_keys($values);
@@ -39,7 +50,7 @@
 			$query .= "(" . "`".implode("`,`", $keys)."`" .")";
 			$query .= "VALUES(" . "'".implode("','", $values)."'" .")";
 
-			self::execute_query($query);
+			satic::execute_query($query);
 
 			if(mysql_errno())
 				return false;
@@ -48,7 +59,7 @@
 		}
 
 		public static function error(){
-			return array("code"=>mysql_errno(), "message" => mysql_error());
+			return array("code"=>mysqli_errno(static::$connection), "message" => mysql_error(static::$connection));
 		}
 
 		public static function update($table, $values, $where){
@@ -65,7 +76,7 @@
 
 			$update_query = array();
 			foreach($values as $key=>$val){
-				$update_query[] = "`".mysql_real_escape_string($key)."`". " = ". "'".mysql_real_escape_string($val)."'";
+				$update_query[] = "`".static::escape($key)."`". " = ". "'".static::escape($val)."'";
 			}
 
 			$query .= "SET ";
@@ -73,7 +84,7 @@
 
 			if(is_array($where) OR is_object($where)){
 				foreach($where as $key=>$val){
-					$where_query[] = "`".mysql_real_escape_string($key)."`". " = '".mysql_real_escape_string($val)."'";
+					$where_query[] = "`".static::escape($key)."`". " = '".static::escape($val)."'";
 				}
 				$where_query = implode(" AND ", $where_query);
 			}else{
@@ -82,7 +93,7 @@
 
 			$query .= " WHERE ".$where_query;
 
-			self::execute_query($query);
+			satic::execute_query($query);
 
 			if(mysql_errno()){
 				return false;
@@ -93,9 +104,9 @@
 
 		public static function execute_query($query){
 			
-			$res = mysql_query($query);
+			$res = mysqli_query(static::$connection, $query);
 			
-			self::set_query($query);
+			satic::set_query($query);
 			
 			if(mysql_error()){
 				return false;
@@ -105,7 +116,7 @@
 		}
 
 		public static function affected_rows(){
-			return mysql_affected_rows();
+			return mysqli_affected_rows(static::$connection);
 		}
 
 		public static function select_all($query, $assoc = FALSE, $auto_paginate = FALSE){
@@ -129,9 +140,9 @@
 				$pagination_block = "";
 			}
 
-			$res = self::execute_query("{$query} {$pagination_block} ");
+			$res = satic::execute_query("{$query} {$pagination_block} ");
 
-			if(mysql_error())
+			if(mysqli_error(static::$connection))
 				return false;
 
 			$resultset = array();
@@ -143,7 +154,7 @@
 		}
 
 		public static function select($query){
-			$res = self::execute_query($query);
+			$res = satic::execute_query($query);
 
 			if(mysql_error()){
 				return false;
@@ -154,13 +165,5 @@
 			return $object;
 		}
 
-		public static function connect($host, $username, $password, $database){
-			mysql_connect($host, $username, $password);
-			mysql_select_db($database);
-		}
-
-		public static function close(){
-			mysql_close();
-			return;
-		}
+		
 	}
