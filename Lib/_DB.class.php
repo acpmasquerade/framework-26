@@ -14,7 +14,7 @@
 		const default_limit = 10;
 
 		public static function connect($host, $username, $password, $database){
-			satic::$connection = mysqli_connect($host, $username, $password, $database);
+			static::$connection = mysqli_connect($host, $username, $password, $database);
 		}
 
 		public static function close(){
@@ -22,15 +22,15 @@
 		}
 		
 		private static function set_query($query){
-			satic::$last_query = $query;
+			static::$last_query = $query;
 		}
 
 		private static function get_query(){
-			return satic::$last_query;
+			return static::$last_query;
 		}
 
 		public static function last_query(){
-			return satic::get_query();
+			return static::get_query();
 		}
 
 		public static function escape($string){
@@ -50,7 +50,7 @@
 			$query .= "(" . "`".implode("`,`", $keys)."`" .")";
 			$query .= "VALUES(" . "'".implode("','", $values)."'" .")";
 
-			satic::execute_query($query);
+			static::execute_query($query);
 
 			if(mysql_errno())
 				return false;
@@ -93,7 +93,7 @@
 
 			$query .= " WHERE ".$where_query;
 
-			satic::execute_query($query);
+			static::execute_query($query);
 
 			if(mysql_errno()){
 				return false;
@@ -106,7 +106,7 @@
 			
 			$res = mysqli_query(static::$connection, $query);
 			
-			satic::set_query($query);
+			static::set_query($query);
 			
 			if(mysql_error()){
 				return false;
@@ -140,7 +140,7 @@
 				$pagination_block = "";
 			}
 
-			$res = satic::execute_query("{$query} {$pagination_block} ");
+			$res = static::execute_query("{$query} {$pagination_block} ");
 
 			if(mysqli_error(static::$connection))
 				return false;
@@ -154,7 +154,7 @@
 		}
 
 		public static function select($query){
-			$res = satic::execute_query($query);
+			$res = static::execute_query($query);
 
 			if(mysql_error()){
 				return false;
